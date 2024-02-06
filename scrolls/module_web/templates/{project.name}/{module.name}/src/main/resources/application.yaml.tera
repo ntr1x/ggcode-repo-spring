@@ -1,0 +1,33 @@
+server:
+  port: {{service.port}}
+  forward-headers-strategy: framework
+  servlet:
+    context-path: {{service.path}}
+
+spring:
+  application:
+    name: {{module.name}}
+  config:
+    import:
+    #   - classpath:shared-hikari.yaml
+    #   - classpath:shared-jpa.yaml
+    #   - classpath:shared-logging.yaml
+    #   - classpath:shared-metrics.yaml
+    #   - classpath:shared-management.yaml
+
+  datasource:
+    url: {{database.url}}
+    username: {{database.username}}
+    password: {{database.password}}
+
+  # security:
+  #   oauth2:
+  #     resourceserver:
+  #       jwt:
+  #         issuer-uri: http://keycloak:8080/auth/realms/rbt
+
+springdoc:
+  api:
+    title: {{api.title}}
+    description: {{api.description}}
+    version: {{api.version}}

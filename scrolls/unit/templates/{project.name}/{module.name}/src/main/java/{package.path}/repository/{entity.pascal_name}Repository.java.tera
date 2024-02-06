@@ -1,0 +1,7 @@
+package {{package.name}}.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import {{package.name}}.entity.{{entity.pascal_name}}Entity;
+
+public interface {{entity.pascal_name}}Repository extends JpaRepository<{{entity.pascal_name}}Entity, {{entity.pk.java_type}}> {
+}

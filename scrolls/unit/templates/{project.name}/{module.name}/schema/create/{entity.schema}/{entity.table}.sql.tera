@@ -1,0 +1,9 @@
+create table {{entity.table}} (
+  {%- for desc in entity.keys %}
+  {{desc.name}} {{desc.db_type}} not null,
+  {%- endfor %}
+  {%- for desc in entity.columns %}
+  {{desc.name}} {{desc.db_type}},
+  {%- endfor %}
+  primary key ({{ entity.keys | map(attribute="name") | join(sep=", ") }})
+);

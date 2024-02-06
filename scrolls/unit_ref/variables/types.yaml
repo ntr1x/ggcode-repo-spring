@@ -1,0 +1,15 @@
+"java.lang.String":
+  - name: String
+    package: java.lang
+"java.lang.Integer":
+  - name: Integer
+    package: java.lang
+"java.lang.Long":
+  - name: Long
+    package: java.lang
+"java.util.UUID":
+  - name: UUID
+    package: java.util
+"java.math.BigDecimal":
+  - name: BigDecimal
+    package: java.math

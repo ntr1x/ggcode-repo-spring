@@ -1,0 +1,21 @@
+name: spring
+actions:
+- name: generate
+  path: actions/generate.luau
+- name: test/spring
+  path: actions/test/spring.luau
+scrolls:
+- name: project
+  path: scrolls/project
+- name: module_web
+  path: scrolls/module_web
+- name: unit
+  path: scrolls/unit
+- name: unit_ref
+  path: scrolls/unit_ref
+repositories:
+- name: core
+  uri: git@github.com:ntr1x/ggcode-repo-core.git
+targets:
+- name: '@examples'
+  path: examples
