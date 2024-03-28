@@ -9,22 +9,8 @@ spring:
     name: {{module.name}}
   config:
     import:
-    #   - classpath:shared-hikari.yaml
-    #   - classpath:shared-jpa.yaml
-    #   - classpath:shared-logging.yaml
-    #   - classpath:shared-metrics.yaml
-    #   - classpath:shared-management.yaml
-
-  datasource:
-    url: {{database.url}}
-    username: {{database.username}}
-    password: {{database.password}}
-
-  # security:
-  #   oauth2:
-  #     resourceserver:
-  #       jwt:
-  #         issuer-uri: http://keycloak:8080/auth/realms/rbt
+      - classpath:shared-datasource.yaml
+      - classpath:shared-security.yaml
 
 springdoc:
   api:

@@ -1,0 +1,40 @@
+package {{package.name}}.converter;
+
+import lombok.RequiredArgsConstructor;
+
+import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import {{package.name}}.model.{{unit.pascal_name}}Model;
+
+import org.ntr1x.common.api.component.AppConverter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Component;
+
+public interface {{unit.pascal_name}}EntityConverter {
+
+    @Component
+    @RequiredArgsConstructor
+    class ToModel implements AppConverter<{{unit.pascal_name}}Entity, {{unit.pascal_name}}Model> {
+        private final ApplicationContext applicationContext;
+
+        public {{unit.pascal_name}}Model convert({{unit.pascal_name}}Entity source) {
+            ConversionService conversionService = applicationContext.getBean(ConversionService.class);
+
+            return {{unit.pascal_name}}Model.builder()
+                    {%- for desc in entity.keys %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endfor %}
+                    {%- for desc in entity.columns %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endfor %}
+                    {%- if entity.refs | length > 0 -%}
+                    {%- for desc in entity.refs %}
+                    .{{desc.camel_name}}(conversionService.convert(
+                            source.get{{desc.pascal_name}}(),
+                            {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model.class))
+                    {%- endfor -%}
+                    {%- endif %}
+                    .build();
+        }
+    }
+}

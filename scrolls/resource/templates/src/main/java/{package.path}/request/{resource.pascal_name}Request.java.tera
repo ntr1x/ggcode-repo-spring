@@ -1,0 +1,80 @@
+package {{package.name}}.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Optional;
+
+public interface {{view.pascal_name}}Request {
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class Id {
+        {%- for desc in entity.keys %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endfor %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Create {
+      {%- for desc in entity.columns %}
+      {# Blank line #}
+      private Optional<{{desc.java_type}}> {{desc.camel_name}};
+      {%- endfor %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class Put {
+        {%- for desc in entity.keys %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endfor %}
+
+        {%- for desc in entity.columns %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endfor %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class Select {
+        {%- for desc in entity.keys %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endfor %}
+
+        {%- for desc in entity.columns %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endfor %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class Update {
+        {%- for desc in entity.keys %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endfor %}
+
+        {%- for desc in entity.columns %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endfor %}
+    }
+}

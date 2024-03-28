@@ -1,14 +1,13 @@
-local entity = require('spring/jpa/entity')
-local pk = require('spring/jpa/pk')
-local prop = require('spring/jpa/prop')
-local ref = require('spring/jpa/ref')
+local Entity = require('spring/jpa/Entity')
+local PK = require('spring/jpa/PK')
+local Prop = require('spring/jpa/Prop')
+local Ref = require('spring/jpa/Ref')
 
-return entity.entity 'public.product' {
-    pk.uuid 'id',
-    prop.text 'name',
-    prop.text 'description',
-    prop.decimal 'price',
-    prop.uuid 'category_id',
-    -- ref.one 'category' ('category_id', 'my.company.service.catalog.entity.CategoryEntity'),
-    -- ref.many 'tags' { prop = 'id', source = 'public.tag.product_id' }
-  }
+return Entity:from('public.record', {
+  PK:uuid 'id',
+  Prop:text 'name',
+  Prop:text 'description',
+  Prop:decimal 'price',
+  -- ref.one 'category' ('category_id', 'my.company.service.catalog.entity.CategoryEntity'),
+  -- ref.many 'tags' { prop = 'id', source = 'public.tag.product_id' }
+}):unwrap()

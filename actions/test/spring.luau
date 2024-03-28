@@ -1,6 +1,6 @@
-local Project = require('spring/project')
-local Module = require('spring/module')
-local Unit = require('spring/unit')
+local Project = require('spring/Project')
+local Module = require('spring/Module')
+local Unit = require('spring/Unit')
 
 local project = Project
   :from('example-application', 'org.example', 'application')

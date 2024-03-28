@@ -1,15 +1,19 @@
 package {{package.name}};
 
+import org.ntr1x.common.web.config.OpenApiConfig;
+import org.ntr1x.common.web.config.OpenApiSecurityConfig;
+import org.ntr1x.common.web.config.WebMvcConfig;
+import org.ntr1x.common.web.config.WebMvcSecurityConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.ntr1x.common.web.config.OpenApiConfig;
-import org.ntr1x.common.web.config.WebMvcConfig;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @Import({
         WebMvcConfig.class,
-        OpenApiConfig.class
+        WebMvcSecurityConfig.class,
+        OpenApiConfig.class,
+        OpenApiSecurityConfig.class
 })
 @EnableJpaRepositories
 public class {{module.suite_class}} {
