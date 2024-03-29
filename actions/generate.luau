@@ -4,12 +4,15 @@ local Project = require('spring/Project')
 local Module = require('spring/Module')
 local Profile = require('spring/Profile')
 local Unit = require('spring/Unit')
+local Projection = require('spring/Projection')
+local Resource = require('spring/Resource')
 local Entity = require('spring/jpa/Entity')
 local Table = require('spring/jpa/Table')
-local Resource = require('spring/Resource')
 local PK = require('spring/jpa/PK')
 local Prop = require('spring/jpa/Prop')
 local Ref = require('spring/jpa/Ref')
+local Action = require('spring/security/Action')
+local Owner = require('spring/security/Owner')
 
 local pom = POM:from('my.company', 'application', {
     "common_api",
@@ -42,99 +45,103 @@ local service_payments = Module
     :from(project, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8083))
 
-local unit_category = Unit:from(service_catalog, "category")
-local unit_product = Unit:from(service_catalog, "product")
+local unit_category = Unit
+    :from(service_catalog, "public.category")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'name',
+        Prop:text 'description',
+    }
 
-unit_category:setup_entity "public.category" {
-    PK:uuid 'id',
-    Prop:text 'name',
-    Prop:text 'description',
-}
+local unit_product = Unit
+    :from(service_catalog, "public.product")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'name',
+        Prop:text 'description',
+        Prop:decimal 'price',
+        Prop:uuid 'category_id',
+        Ref:new {
+            name = 'category',
+            column = 'category_id',
+            unit = unit_category,
+        },
+    }
 
-unit_product:setup_entity "public.product" {
-    PK:uuid 'id',
-    Prop:text 'name',
-    Prop:text 'description',
-    Prop:decimal 'price',
-    Prop:uuid 'category_id',
-    Ref:new {
-        name = 'category',
-        column = 'category_id',
-        unit = unit_category,
-    },
-}
+local unit_customer = Unit
+    :from(service_customers, "public.customer")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'email',
+        Prop:text 'phone',
+        Prop:text 'name',
+    }
 
-local unit_customer = Unit:from(service_customers, "customer")
+local unit_basket_customer_ref = Unit
+    :from(service_basket, "public.customer")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'email',
+        Prop:text 'phone',
+        Prop:text 'name',
+    }
 
-unit_customer:setup_entity "public.customer" {
-    PK:uuid 'id',
-    Prop:text 'email',
-    Prop:text 'phone',
-    Prop:text 'name',
-}
+local unit_basket_product_ref = Unit
+    :from(service_basket, "public.product")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'name',
+        Prop:decimal 'price',
+    }
 
-local unit_basket_entry = Unit:from(service_basket, "basket_entry")
-local unit_favorite = Unit:from(service_basket, "favorite")
-local unit_basket_customer_ref = Unit:from(service_basket, "customer")
-local unit_basket_product_ref = Unit:from(service_basket, "product")
+local unit_basket_entry = Unit
+    :from(service_basket, "public.basket_entry")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:uuid 'customer_id',
+        Prop:uuid 'product_id',
+        Prop:int 'quantity',
+        Ref:new {
+            name = 'customer',
+            column = 'customer_id',
+            unit = unit_basket_customer_ref
+        },
+        Ref:new {
+            name = 'product',
+            column = 'product_id',
+            unit = unit_basket_product_ref
+        },
+    }
 
-unit_basket_entry:setup_entity "public.basket_entry" {
-    PK:uuid 'id',
-    Prop:uuid 'customer_id',
-    Prop:uuid 'product_id',
-    Prop:int 'quantity',
-    Ref:new {
-        name = 'customer',
-        column = 'customer_id',
-        unit = unit_basket_customer_ref
-    },
-    Ref:new {
-        name = 'product',
-        column = 'product_id',
-        unit = unit_basket_product_ref
-    },
-}
+local unit_favorite = Unit
+    :from(service_basket, "public.favorite")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:uuid 'customer_id',
+        Prop:uuid 'product_id',
+        Ref:new {
+            name = 'customer',
+            column = 'customer_id',
+            unit = unit_basket_customer_ref
+        },
+        Ref:new {
+            name = 'product',
+            column = 'product_id',
+            unit = unit_basket_product_ref
+        },
+    }
 
-unit_favorite:setup_entity "public.favorite" {
-    PK:uuid 'id',
-    Prop:uuid 'customer_id',
-    Prop:uuid 'product_id',
-    Ref:new {
-        name = 'customer',
-        column = 'customer_id',
-        unit = unit_basket_customer_ref
-    },
-    Ref:new {
-        name = 'product',
-        column = 'product_id',
-        unit = unit_basket_product_ref
-    },
-}
+local unit_order = Unit:from(service_payments, "public.order")
+local unit_order_type = Unit:from(service_payments, "public.order_type")
+local unit_order_entry = Unit:from(service_payments, "public.order_entry")
+local unit_order_status = Unit:from(service_payments, "public.order_status")
+local unit_payment = Unit:from(service_payments, "public.payment")
+local unit_payment_type = Unit:from(service_payments, "public.payment_type")
+local unit_payment_status = Unit:from(service_payments, "public.payment_status")
+local unit_payment_customer_ref = Unit:from(service_payments, "public.customer")
+local unit_payment_product_ref = Unit:from(service_payments, "public.product")
 
-unit_basket_customer_ref:setup_entity "public.customer" {
-    PK:uuid 'id',
-    Prop:text 'email',
-    Prop:text 'phone',
-    Prop:text 'name',
-}
-
-unit_basket_product_ref:setup_entity "public.product" {
-    PK:uuid 'id',
-    Prop:text 'name',
-    Prop:decimal 'price',
-}
-
-local unit_order = Unit:from(service_payments, "order")
-local unit_order_type = Unit:from(service_payments, "order_type")
-local unit_order_entry = Unit:from(service_payments, "order_entry")
-local unit_order_status = Unit:from(service_payments, "order_status")
-local unit_payment = Unit:from(service_payments, "payment")
-local unit_payment_type = Unit:from(service_payments, "payment_type")
-local unit_payment_status = Unit:from(service_payments, "payment_status")
-local unit_payment_customer_ref = Unit:from(service_payments, "customer")
-local unit_payment_product_ref = Unit:from(service_payments, "product")
-
-unit_order:setup_entity "public.order" {
+unit_order:with_columns {
     PK:uuid 'id',
     Prop:uuid 'customer_id',
     Prop:int 'order_type_id',
@@ -158,13 +165,13 @@ unit_order:setup_entity "public.order" {
     },
 }
 
-unit_order_type:setup_entity "public.order_type" {
+unit_order_type:with_columns {
     PK:uuid 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
 
-unit_order_entry:setup_entity "public.order_entry" {
+unit_order_entry:with_columns {
     PK:uuid 'id',
     Prop:uuid 'product_id',
     Prop:uuid 'order_id',
@@ -181,13 +188,13 @@ unit_order_entry:setup_entity "public.order_entry" {
     },
 }
 
-unit_order_status:setup_entity "public.order_status" {
+unit_order_status:with_columns {
     PK:uuid 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
 
-unit_payment:setup_entity "public.payment" {
+unit_payment:with_columns {
     PK:uuid 'id',
     Prop:uuid 'order_id',
     Prop:uuid 'payment_status_id',
@@ -207,71 +214,56 @@ unit_payment:setup_entity "public.payment" {
     },
 }
 
-unit_payment_type:setup_entity "public.payment_type" {
+unit_payment_type:with_columns {
     PK:uuid 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
 
-unit_payment_status:setup_entity "public.payment_status" {
+unit_payment_status:with_columns {
     PK:uuid 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
 
-unit_payment_customer_ref:setup_entity "public.customer" {
+unit_payment_customer_ref:with_columns {
     PK:uuid 'id',
     Prop:text 'email',
     Prop:text 'phone',
     Prop:text 'name',
 }
 
-unit_payment_product_ref:setup_entity "public.product" {
+unit_payment_product_ref:with_columns {
     PK:uuid 'id',
     Prop:text 'name',
     Prop:decimal 'price',
 }
 
--- local projection_system_actions = {
---     action.create "hasAuthority('realm:admin')";
---     action.remove "hasAuthority('realm:admin')";
---     action.update "hasAuthority('realm:admin')";
---     action.get "hasAuthority('realm:admin')";
---     action.list "hasAuthority('realm:admin')";
--- }
+local projection_system = Projection:from("system")
+local projection_anonymous = Projection:from("anonymous")
+local projection_profile = Projection:from("profile")
 
--- local projection_system = Projection:from("system")
+local projection_system_actions = {
+    Action:create "hasAuthority('realm:admin')";
+    Action:remove "hasAuthority('realm:admin')";
+    Action:update "hasAuthority('realm:admin')";
+    Action:get "hasAuthority('realm:admin')";
+    Action:list "hasAuthority('realm:admin')";
+}
 
--- Resource:from(projection_system, unit_order_type)
--- Resource:from(projection_system, unit_order_status)
--- Resource:from(projection_system, unit_payment_type)
--- Resource:from(projection_system, unit_payment_status):with_config()
+local projection_anonymous_actions = {
+    Action:get '';
+    Action:list '';
+}
 
--- local projection_public_actions = {
---     action.get nil;
---     action.list nil;
--- }
-
--- local projection_public = Projection:from("public")
-
--- Resource:from(unit_product, projection_public):with_config(projection_public_actions)
--- Resource:from(unit_category, projection_public):with_config(projection_public_actions)
-
--- local projection_profile_actions = {
---     owner.sub "customer_id";
---     action.create "isAuthenticated()";
---     action.remove "isAuthenticated()";
---     action.update "isAuthenticated()";
---     action.get "isAuthenticated()";
---     action.list "isAuthenticated()";
--- }
-
--- local projection_profile = Projection:from("profile")
-
--- Resource:from(projection_profile, unit_basket_entry):with_config(projection_profile_actions)
--- Resource:from(projection_profile, unit_favorite):with_config(projection_profile_actions)
--- Resource:from(projection_profile, unit_order):with_config(projection_profile_actions)
--- Resource:from(projection_profile, unit_payment):with_config(projection_profile_actions)
+local projection_profile_actions = {
+    Owner:sub "customer_id";
+    Action:create "isAuthenticated()";
+    Action:remove "isAuthenticated()";
+    Action:update "isAuthenticated()";
+    Action:get "isAuthenticated()";
+    Action:list "isAuthenticated()";
+}
 
 -- Generate Project
 ggcode.generate "@/project" { target = '@examples', variables = project:unwrap() }
@@ -300,17 +292,44 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_status
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_customer_ref:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
 
--- for im, module in project.modules do
---     -- Generate Modules
---     ggcode.generate "@/module_web" { target = '@examples', variables = module:unwrap() }
-
---     -- Generate Units (with entities, repositories and primary models)
---     for i, unit in module.units do
---         ggcode.generate "@/unit" { target = '@examples', variables = unit:unwrap() }
---     end
-
--- --     -- Generate Resources (with models, services and controllers)
--- --     for i, resource in module.resources do
--- --         ggcode.generate "@/resource" { target = '@examples', variables = resource:unwrap() }
--- --     end
--- end
+-- Generate resources
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_system, unit_order_type):with_actions(projection_system_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_system, unit_order_status):with_actions(projection_system_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_system, unit_payment_type):with_actions(projection_system_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_system, unit_payment_status):with_actions(projection_system_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_anonymous, unit_product):with_actions(projection_anonymous_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_anonymous, unit_category):with_actions(projection_anonymous_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_profile, unit_basket_entry):with_actions(projection_profile_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_profile, unit_favorite):with_actions(projection_profile_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_profile, unit_order):with_actions(projection_profile_actions):unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource:from(projection_profile, unit_payment):with_actions(projection_profile_actions):unwrap()
+}

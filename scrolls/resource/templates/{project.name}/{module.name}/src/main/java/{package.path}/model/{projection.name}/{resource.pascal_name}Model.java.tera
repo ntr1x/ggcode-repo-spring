@@ -1,4 +1,4 @@
-package {{package.name}}.model;
+package {{package.name}}.model.{{projection.name}};
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

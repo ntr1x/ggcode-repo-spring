@@ -19,29 +19,31 @@ end
 function Entity:from(name: string, children: table)
   local schema, table = name:match("([^.]+).([^.]+)")
 
-  local keys = {}
-  local columns = {}
-  local refs = {}
+  return Entity
+    :new({
+      schema = schema,
+      table = table,
+      keys = {},
+      columns = {},
+      refs = {}
+    })
+    :with_columns(children)
+end
 
+function Entity:with_columns(children: table)
   children = children or {}
 
   for _, child in children do
     if child.__type == 'PK' then
-      keys[#keys + 1] = child
+      self.keys[#self.keys + 1] = child
     elseif child.__type == 'Prop' then
-      columns[#columns + 1] = child
+      self.columns[#self.columns + 1] = child
     elseif child.__type == 'Ref' then
-      refs[#refs + 1] = child
+      self.refs[#self.refs + 1] = child
     end
   end
 
-  return Entity:new({
-    schema = schema,
-    table = table,
-    keys = keys,
-    columns = columns,
-    refs = refs,
-  })
+  return self
 end
 
 function Entity:unwrap_keys()

@@ -2,8 +2,8 @@ local case = require('core/util/string/case')
 
 local Resource = {
   __type = 'Resource',
+  projection = nil,
   unit = nil,
-  name = nil,
   actions = {}
 }
 
@@ -14,30 +14,40 @@ function Resource:new(o)
   return o
 end
 
-function Resource:from(unit: Unit, name: string)
+function Resource:from(projection: Projection, unit: Unit)
   return Resource:new({
+    projection = projection,
     unit = unit,
-    name = name,
     actions = {},
   })
 end
 
-function Resource:setup(children: table)
+function Resource:with_actions(children: table)
   for i, item in children do
   end
   return self
 end
 
+function Resource:unwrap_resource()
+  local name = self.projection.name .. '_' .. self.unit.name
+  return {
+    name = name,
+    snake_name = name,
+    camel_name = case.snakeToCamel(name),
+    pascal_name = case.snakeToPascal(name),
+    kebab_name = case.snakeToKebab(name),
+  }
+end
+
 function Resource:unwrap()
   return {
-    unit = self.unit,
-    resource = {
-      name = name,
-      snake_name = name,
-      camel_name = case.snakeToCamel(name),
-      pascal_name = case.snakeToPascal(name),
-      kebab_name = case.snakeToKebab(name),
-    }
+    project = self.unit.module:unwrap_project(),
+    module = self.unit:unwrap_module(),
+    unit = self.unit:unwrap_unit(),
+    package = self.unit.module:unwrap_package(),
+    entity = self.unit.entity:unwrap(),
+    projection = self.projection:unwrap(),
+    resource = self:unwrap_resource(),
   }
 end
 

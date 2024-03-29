@@ -1,4 +1,4 @@
-package {{package.name}}.request;
+package {{package.name}}.request.{{projection.name}};
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.Optional;
 
-public interface {{view.pascal_name}}Request {
+public interface {{resource.pascal_name}}Request {
     @Data
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
-    public class Id {
+    class Id {
         {%- for desc in entity.keys %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
@@ -23,7 +23,7 @@ public interface {{view.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Create {
+    class Create {
       {%- for desc in entity.columns %}
       {# Blank line #}
       private Optional<{{desc.java_type}}> {{desc.camel_name}};
@@ -34,7 +34,7 @@ public interface {{view.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
-    public class Put {
+    class Put {
         {%- for desc in entity.keys %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
@@ -50,7 +50,7 @@ public interface {{view.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
-    public class Select {
+    class Select {
         {%- for desc in entity.keys %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
@@ -66,7 +66,7 @@ public interface {{view.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
-    public class Update {
+    class Update {
         {%- for desc in entity.keys %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};

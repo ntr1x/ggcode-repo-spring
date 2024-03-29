@@ -1,0 +1,132 @@
+package {{package.name}}.service.{{projection.name}};
+
+import jakarta.transaction.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.stereotype.Service;
+
+import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import {{package.name}}.repository.{{unit.pascal_name}}Repository;
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class {{resource.pascal_name}}Service {
+
+    private final {{unit.pascal_name}}Repository {{unit.camel_name}}Repository;
+    private final ConversionService conversionService;
+
+    @Transactional
+    public {{resource.pascal_name}}Model create({{resource.pascal_name}}Request.Create request) {
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = {{unit.pascal_name}}Entity.builder();
+        {# Blank line #}
+        {% for desc in entity.keys %}
+        {%- if desc.generator_type == 'random' and desc.java_type == 'java.util.UUID' -%}
+        builder.{{desc.camel_name}}(java.util.UUID.randomUUID());
+        {%- endif -%}
+        {%- endfor %}
+        {% for desc in entity.columns %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endfor %}
+
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.save(builder.build());
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+
+    @Transactional
+    public {{resource.pascal_name}}Model remove({{resource.pascal_name}}Request.Id key) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.getId())
+                .orElseThrow();
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        {{unit.camel_name}}Repository.delete(entity);
+        return result;
+    }
+
+    @Transactional
+    public {{resource.pascal_name}}Model get({{resource.pascal_name}}Request.Id key) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.getId())
+                .orElseThrow();
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+
+    @Transactional
+    public {{resource.pascal_name}}Model update({{resource.pascal_name}}Request.Update request) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(request.getId())
+                .orElseThrow();
+        {# Blank line #}
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
+        {# Blank line #}
+        {%- for desc in entity.columns %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endfor %}
+
+        entity = {{unit.camel_name}}Repository.save(builder.build());
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+
+    @Transactional
+    public {{resource.pascal_name}}Model update({{resource.pascal_name}}Request.Id key, {{resource.pascal_name}}Request.Put request) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.getId())
+                .orElseThrow();
+
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
+        {# Blank line #}
+        {%- for desc in entity.keys %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endfor %}
+        {%- for desc in entity.columns %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endfor %}
+
+        entity = {{unit.camel_name}}Repository.save(builder.build());
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+
+    @Transactional
+    public Page<{{resource.pascal_name}}Model> select({{resource.pascal_name}}Request.Select request, Pageable pageable) {
+        ExampleMatcher matcher = ExampleMatcher.matchingAll();
+
+        {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
+        {% for desc in entity.keys %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent(optional -> {
+                    matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+                    template.set{{desc.pascal_name}}(optional.orElse(null));
+                });
+        {%- endfor %}
+        {%- for desc in entity.columns %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent(optional -> {
+                    matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+                    template.set{{desc.pascal_name}}(optional.orElse(null));
+                });
+        {%- endfor %}
+
+        Example<{{unit.pascal_name}}Entity> example = Example.of(template, matcher);
+
+        return {{unit.camel_name}}Repository
+                .findAll(example, pageable)
+                .map(item -> conversionService.convert(item, {{resource.pascal_name}}Model.class));
+    }
+}

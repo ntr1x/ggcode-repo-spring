@@ -1,23 +1,22 @@
-package {{package.name}}.converter;
+package {{package.name}}.converter.{{projection.name}};
 
 import lombok.RequiredArgsConstructor;
 
-import {{package.name}}.entity.{{entity.pascal_name}}Entity;
-import {{package.name}}.model.{{entity.pascal_name}}Model;
+import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
 
 import org.ntr1x.common.api.component.AppConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
-public interface {{entity.pascal_name}}EntityConverter {
-
+public interface {{resource.pascal_name}}EntityConverter {
     @Component
     @RequiredArgsConstructor
-    class ToModel implements AppConverter<{{entity.pascal_name}}Entity, {{resource.pascal_name}}Model> {
+    class ToModel implements AppConverter<{{unit.pascal_name}}Entity, {{resource.pascal_name}}Model> {
         private final ApplicationContext applicationContext;
 
-        public {{resource.pascal_name}}Model convert({{entity.pascal_name}}Entity source) {
+        public {{resource.pascal_name}}Model convert({{unit.pascal_name}}Entity source) {
             ConversionService conversionService = applicationContext.getBean(ConversionService.class);
 
             return {{resource.pascal_name}}Model.builder()

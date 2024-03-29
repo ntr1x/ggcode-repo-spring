@@ -1,0 +1,94 @@
+package {{package.name}}.controller.{{projection.name}};
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+import {{package.name}}.service.{{projection.name}}.{{resource.pascal_name}}Service;
+import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Tag(name = "{{resource.pascal_name}}")
+@RequestMapping("/{{projection.name}}/{{unit.snake_name}}")
+@RequiredArgsConstructor
+public class {{resource.pascal_name}}Controller {
+
+    private final {{resource.pascal_name}}Service {{resource.camel_name}}Service;
+
+    @PostMapping
+    public {{resource.pascal_name}}Model create(
+            @RequestBody {{resource.pascal_name}}Request.Create request
+    ) {
+        return {{resource.camel_name}}Service.create(request);
+    }
+
+    @PostMapping("/remove")
+    public {{resource.pascal_name}}Model remove(
+            @RequestBody {{resource.pascal_name}}Request.Id key
+    ) {
+        return {{resource.camel_name}}Service.remove(key);
+    }
+
+    @PutMapping("/update")
+    public {{resource.pascal_name}}Model update(
+            @RequestBody {{resource.pascal_name}}Request.Update request
+    ) {
+        return {{resource.camel_name}}Service.update(request);
+    }
+
+    @PostMapping("/select")
+    public final Page<{{resource.pascal_name}}Model> select(
+            @RequestBody {{resource.pascal_name}}Request.Select request,
+            @ParameterObject Pageable pageable
+    ) {
+        return {{resource.camel_name}}Service.select(request, pageable);
+    }
+
+    @DeleteMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    public final {{resource.pascal_name}}Model remove(
+        {%- for desc in entity.keys %}
+            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.remove(recordKey);
+    }
+
+    @PutMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    public final {{resource.pascal_name}}Model update(
+        {%- for desc in entity.keys %}
+            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
+        {%- endfor %}
+            @RequestBody {{resource.pascal_name}}Request.Put request
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.update(recordKey, request);
+    }
+
+    @GetMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    public final {{resource.pascal_name}}Model get(
+        {%- for desc in entity.keys %}
+            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+        {%- endfor %}
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.get(recordKey);
+    }
+}

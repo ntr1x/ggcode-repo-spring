@@ -11,6 +11,8 @@ scrolls:
   path: scrolls/module_web
 - name: unit
   path: scrolls/unit
+- name: resource
+  path: scrolls/resource
 repositories:
 - name: core
   uri: git@github.com:ntr1x/ggcode-repo-core.git

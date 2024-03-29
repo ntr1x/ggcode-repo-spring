@@ -23,4 +23,10 @@ function Projection:with_resource(resource)
   return self
 end
 
+function Projection:unwrap()
+  return {
+    name = self.name,
+  }
+end
+
 return Projection

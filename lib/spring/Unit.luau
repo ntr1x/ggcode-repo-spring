@@ -18,19 +18,19 @@ function Unit:new(o)
   return o
 end
 
-function Unit:from(module: Module, name: string)
+function Unit:from(module: Module, table_name: string, children: table)
+  assert(module ~= nil)
+  local name = case.propToSnake(table_name)
   return Unit:new({
     module = module,
     name = name,
-    entity = nil,
+    entity = Entity:from(table_name, children or {}),
   })
 end
 
-function Unit:setup_entity(table_name: string)
-  local unit = self
-  return function (children: table)
-    unit.entity = Entity:from(table_name, children)
-  end
+function Unit:with_columns(children: table)
+  self.entity:with_columns(children)
+  return self
 end
 
 function Unit:unwrap_unit()
