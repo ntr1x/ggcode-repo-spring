@@ -248,21 +248,23 @@ local projection_system_actions = {
     Action:remove "hasAuthority('realm:admin')";
     Action:update "hasAuthority('realm:admin')";
     Action:get "hasAuthority('realm:admin')";
-    Action:list "hasAuthority('realm:admin')";
+    Action:select "hasAuthority('realm:admin')";
 }
 
 local projection_anonymous_actions = {
     Action:get '';
-    Action:list '';
+    Action:select '';
 }
 
 local projection_profile_actions = {
     Owner:sub "customer_id";
     Action:create "isAuthenticated()";
     Action:remove "isAuthenticated()";
+    Action:delete "isAuthenticated()";
     Action:update "isAuthenticated()";
+    Action:replace "isAuthenticated()";
     Action:get "isAuthenticated()";
-    Action:list "isAuthenticated()";
+    Action:select "isAuthenticated()";
 }
 
 -- Generate Project
@@ -295,41 +297,71 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_produc
 -- Generate resources
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_system, unit_order_type):with_actions(projection_system_actions):unwrap()
+    variables = Resource
+        :from(projection_system, unit_order_type)
+        :with_actions(projection_system_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_system, unit_order_status):with_actions(projection_system_actions):unwrap()
+    variables = Resource
+        :from(projection_system, unit_order_status)
+        :with_actions(projection_system_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_system, unit_payment_type):with_actions(projection_system_actions):unwrap()
+    variables = Resource
+        :from(projection_system, unit_payment_type)
+        :with_actions(projection_system_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_system, unit_payment_status):with_actions(projection_system_actions):unwrap()
+    variables = Resource
+        :from(projection_system, unit_payment_status)
+        :with_actions(projection_system_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_anonymous, unit_product):with_actions(projection_anonymous_actions):unwrap()
+    variables = Resource
+        :from(projection_anonymous, unit_product)
+        :with_actions(projection_anonymous_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_anonymous, unit_category):with_actions(projection_anonymous_actions):unwrap()
+    variables = Resource
+        :from(projection_anonymous, unit_category)
+        :with_actions(projection_anonymous_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_profile, unit_basket_entry):with_actions(projection_profile_actions):unwrap()
+    variables = Resource
+        :from(projection_profile, unit_basket_entry)
+        :with_actions(projection_profile_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_profile, unit_favorite):with_actions(projection_profile_actions):unwrap()
+    variables = Resource
+        :from(projection_profile, unit_favorite)
+        :with_actions(projection_profile_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_profile, unit_order):with_actions(projection_profile_actions):unwrap()
+    variables = Resource
+        :from(projection_profile, unit_order)
+        :with_actions(projection_profile_actions)
+        :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
-    variables = Resource:from(projection_profile, unit_payment):with_actions(projection_profile_actions):unwrap()
+    variables = Resource
+        :from(projection_profile, unit_payment)
+        :with_actions(projection_profile_actions)
+        :unwrap()
 }

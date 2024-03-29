@@ -27,16 +27,24 @@ function Action:remove(role: string)
   return Action:from('remove', role)
 end
 
+function Action:delete(role: string)
+  return Action:from('delete', role)
+end
+
 function Action:update(role: string)
   return Action:from('update', role)
+end
+
+function Action:replace(role: string)
+  return Action:from('replace', role)
 end
 
 function Action:get(role: string)
   return Action:from('get', role)
 end
 
-function Action:list(role: string)
-  return Action:from('list', role)
+function Action:select(role: string)
+  return Action:from('select', role)
 end
 
 function Action:unwrap()

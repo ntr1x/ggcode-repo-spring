@@ -1,6 +1,7 @@
 package {{package.name}}.controller.{{projection.name}};
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
@@ -11,6 +12,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 @RestController
 @Tag(name = "{{resource.pascal_name}}")
@@ -20,36 +23,70 @@ public class {{resource.pascal_name}}Controller {
 
     private final {{resource.pascal_name}}Service {{resource.camel_name}}Service;
 
+    {%- if actions.create %}
+    {# Blank line #}
     @PostMapping
+    {%- if actions.create.role != '' %}
+    @PreAuthorize("{{actions.create.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public {{resource.pascal_name}}Model create(
             @RequestBody {{resource.pascal_name}}Request.Create request
     ) {
         return {{resource.camel_name}}Service.create(request);
     }
+    {%- endif %}
 
+    {%- if actions.remove %}
+    {# Blank line #}
     @PostMapping("/remove")
+    {%- if actions.remove.role != '' %}
+    @PreAuthorize("{{actions.remove.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public {{resource.pascal_name}}Model remove(
             @RequestBody {{resource.pascal_name}}Request.Id key
     ) {
         return {{resource.camel_name}}Service.remove(key);
     }
+    {%- endif %}
 
+    {%- if actions.update %}
+    {# Blank line #}
     @PutMapping("/update")
+    {%- if actions.update.role != '' %}
+    @PreAuthorize("{{actions.update.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public {{resource.pascal_name}}Model update(
             @RequestBody {{resource.pascal_name}}Request.Update request
     ) {
         return {{resource.camel_name}}Service.update(request);
     }
+    {%- endif %}
 
+    {%- if actions.select %}
+    {# Blank line #}
     @PostMapping("/select")
+    {%- if actions.select.role != '' %}
+    @PreAuthorize("{{actions.select.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public final Page<{{resource.pascal_name}}Model> select(
             @RequestBody {{resource.pascal_name}}Request.Select request,
             @ParameterObject Pageable pageable
     ) {
         return {{resource.camel_name}}Service.select(request, pageable);
     }
+    {%- endif %}
 
+    {%- if actions.delete %}
+    {# Blank line #}
     @DeleteMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    {%- if actions.delete.role != '' %}
+    @PreAuthorize("{{actions.delete.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public final {{resource.pascal_name}}Model remove(
         {%- for desc in entity.keys %}
             @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
@@ -62,9 +99,16 @@ public class {{resource.pascal_name}}Controller {
                 .build();
         return {{resource.camel_name}}Service.remove(recordKey);
     }
+    {%- endif %}
 
+    {%- if actions.replace %}
+    {# Blank line #}
     @PutMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    public final {{resource.pascal_name}}Model update(
+    {%- if actions.replace.role != '' %}
+    @PreAuthorize("{{actions.replace.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    public final {{resource.pascal_name}}Model replace(
         {%- for desc in entity.keys %}
             @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
         {%- endfor %}
@@ -75,10 +119,17 @@ public class {{resource.pascal_name}}Controller {
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
-        return {{resource.camel_name}}Service.update(recordKey, request);
+        return {{resource.camel_name}}Service.replace(recordKey, request);
     }
+    {%- endif %}
 
+    {%- if actions.get %}
+    {# Blank line #}
     @GetMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    {%- if actions.get.role != '' %}
+    @PreAuthorize("{{actions.get.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
     public final {{resource.pascal_name}}Model get(
         {%- for desc in entity.keys %}
             @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
@@ -91,4 +142,5 @@ public class {{resource.pascal_name}}Controller {
                 .build();
         return {{resource.camel_name}}Service.get(recordKey);
     }
+    {%- endif %}
 }

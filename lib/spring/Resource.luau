@@ -23,8 +23,14 @@ function Resource:from(projection: Projection, unit: Unit)
 end
 
 function Resource:with_actions(children: table)
-  for i, item in children do
+  children = children or {}
+
+  for _, child in children do
+    if child.__type == 'Action' then
+      self.actions[#self.actions + 1] = child
+    end
   end
+
   return self
 end
 
@@ -39,6 +45,16 @@ function Resource:unwrap_resource()
   }
 end
 
+function Resource:unwrap_actions()
+  local actions = {}
+  for i, a in self.actions do
+    actions[a.method] = {
+      role = a.role
+    }
+  end
+  return actions
+end
+
 function Resource:unwrap()
   return {
     project = self.unit.module:unwrap_project(),
@@ -48,6 +64,7 @@ function Resource:unwrap()
     entity = self.unit.entity:unwrap(),
     projection = self.projection:unwrap(),
     resource = self:unwrap_resource(),
+    actions = self:unwrap_actions(),
   }
 end
 

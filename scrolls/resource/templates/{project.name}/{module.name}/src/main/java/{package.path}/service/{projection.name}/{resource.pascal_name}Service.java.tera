@@ -82,7 +82,7 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model update({{resource.pascal_name}}Request.Id key, {{resource.pascal_name}}Request.Put request) {
+    public {{resource.pascal_name}}Model replace({{resource.pascal_name}}Request.Id key, {{resource.pascal_name}}Request.Put request) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
