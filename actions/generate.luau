@@ -12,7 +12,7 @@ local PK = require('spring/jpa/PK')
 local Prop = require('spring/jpa/Prop')
 local Ref = require('spring/jpa/Ref')
 local Action = require('spring/security/Action')
-local Owner = require('spring/security/Owner')
+local Auth = require('spring/security/Auth')
 
 local pom = POM:from('my.company', 'application', {
     "common_api",
@@ -239,33 +239,41 @@ unit_payment_product_ref:with_columns {
     Prop:decimal 'price',
 }
 
-local projection_system = Projection:from("system")
-local projection_anonymous = Projection:from("anonymous")
-local projection_profile = Projection:from("profile")
+local projection_system = Projection
+    :from("system")
+    :with_rules {
+        Action:create "hasAuthority('realm:admin')";
+        Action:remove "hasAuthority('realm:admin')";
+        Action:remove "isAuthenticated()";
+        Action:delete "isAuthenticated()";
+        Action:update "isAuthenticated()";
+        Action:replace "isAuthenticated()";
+        Action:get "isAuthenticated()";
+        Action:select "isAuthenticated()";
+        Action:update "hasAuthority('realm:admin')";
+        Action:get "hasAuthority('realm:admin')";
+        Action:select "hasAuthority('realm:admin')";
+    }
 
-local projection_system_actions = {
-    Action:create "hasAuthority('realm:admin')";
-    Action:remove "hasAuthority('realm:admin')";
-    Action:update "hasAuthority('realm:admin')";
-    Action:get "hasAuthority('realm:admin')";
-    Action:select "hasAuthority('realm:admin')";
-}
+local projection_anonymous = Projection
+    :from("anonymous")
+    :with_rules {
+        Action:get '';
+        Action:select '';
+    }
 
-local projection_anonymous_actions = {
-    Action:get '';
-    Action:select '';
-}
-
-local projection_profile_actions = {
-    Owner:sub "customer_id";
-    Action:create "isAuthenticated()";
-    Action:remove "isAuthenticated()";
-    Action:delete "isAuthenticated()";
-    Action:update "isAuthenticated()";
-    Action:replace "isAuthenticated()";
-    Action:get "isAuthenticated()";
-    Action:select "isAuthenticated()";
-}
+local projection_profile = Projection
+    :from("profile")
+    :with_rules {
+        Auth:subject "customer_id";
+        Action:get "isAuthenticated()";
+        Action:select "isAuthenticated()";
+        Action:create "isAuthenticated()";
+        Action:remove "isAuthenticated()";
+        Action:delete "isAuthenticated()";
+        Action:update "isAuthenticated()";
+        Action:replace "isAuthenticated()";
+    }
 
 -- Generate Project
 ggcode.generate "@/project" { target = '@examples', variables = project:unwrap() }
@@ -295,73 +303,13 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_custom
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
 
 -- Generate resources
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_system, unit_order_type)
-        :with_actions(projection_system_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_system, unit_order_status)
-        :with_actions(projection_system_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_system, unit_payment_type)
-        :with_actions(projection_system_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_system, unit_payment_status)
-        :with_actions(projection_system_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_anonymous, unit_product)
-        :with_actions(projection_anonymous_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_anonymous, unit_category)
-        :with_actions(projection_anonymous_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_profile, unit_basket_entry)
-        :with_actions(projection_profile_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_profile, unit_favorite)
-        :with_actions(projection_profile_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_profile, unit_order)
-        :with_actions(projection_profile_actions)
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_profile, unit_payment)
-        :with_actions(projection_profile_actions)
-        :unwrap()
-}
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_order_type):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_order_status):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_payment_type):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_payment_status):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_anonymous, unit_product):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_anonymous, unit_category):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_basket_entry):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_favorite):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_order):unwrap() }
+ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_payment):unwrap() }

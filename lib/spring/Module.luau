@@ -21,6 +21,9 @@ function Module:from(parent: Project, name: string)
   return Module:new({
     parent = parent,
     name = name,
+    database = nil,
+    pom = nil,
+    profiles = {},
   })
 end
 

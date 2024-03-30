@@ -1,0 +1,38 @@
+package {{package.name}}.advice.{{projection.name}};
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+
+@ControllerAdvice
+public class {{resource.pascal_name}}ControllerAdvice {
+
+    @Autowired(required = false)
+    private Authentication authentication;
+
+    @Autowired
+    private ConversionService conversionService;
+
+    @ModelAttribute
+    public {{resource.pascal_name}}Request.Context context() {
+        if (authentication instanceof JwtAuthenticationToken token) {
+            Jwt jwt = token.getToken();
+
+            return {{resource.pascal_name}}Request.Context
+                    .builder()
+                    {%- if resource.context | length > 0 -%}
+                    {%- for desc in resource.context %}
+                    .{{desc.column.camel_name}}(conversionService.convert(jwt.getClaim("{{desc.claim}}"), {{desc.java_type}}.class))
+                    {%- endfor -%}
+                    {%- endif %}
+                    .build();
+        }
+        return null;
+    }
+}

@@ -28,15 +28,15 @@
             <artifactId>common_web</artifactId>
             <version>${project.version}</version>
         </dependency>
-      {%- for dependency in pom.dependencies %}
-          <dependency>
-              <groupId>{{dependency.group_id}}</groupId>
-              <artifactId>{{dependency.artifact_id}}</artifactId>
-              {%- if dependency.version is defined %}
-              <version>{{dependency.version}}</version>
-              {%- endif %}
-          </dependency>
-      {%- endfor %}
+        {%- for dependency in pom.dependencies %}
+        <dependency>
+            <groupId>{{dependency.group_id}}</groupId>
+            <artifactId>{{dependency.artifact_id}}</artifactId>
+            {%- if dependency.version is defined %}
+            <version>{{dependency.version}}</version>
+            {%- endif %}
+        </dependency>
+        {%- endfor %}
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

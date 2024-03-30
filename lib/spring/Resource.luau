@@ -4,7 +4,8 @@ local Resource = {
   __type = 'Resource',
   projection = nil,
   unit = nil,
-  actions = {}
+  actions = {},
+  context = {},
 }
 
 function Resource:new(o)
@@ -19,15 +20,18 @@ function Resource:from(projection: Projection, unit: Unit)
     projection = projection,
     unit = unit,
     actions = {},
+    context = {},
   })
 end
 
-function Resource:with_actions(children: table)
+function Resource:with_rules(children: table)
   children = children or {}
 
   for _, child in children do
     if child.__type == 'Action' then
       self.actions[#self.actions + 1] = child
+    elseif child.__type == 'Auth' then
+      self.context[#self.context + 1] = child
     end
   end
 
@@ -42,17 +46,34 @@ function Resource:unwrap_resource()
     camel_name = case.snakeToCamel(name),
     pascal_name = case.snakeToPascal(name),
     kebab_name = case.snakeToKebab(name),
+    actions = self:unwrap_actions_map(),
+    context = self:unwrap_context(),
   }
 end
 
-function Resource:unwrap_actions()
+function Resource:unwrap_actions_map()
   local actions = {}
+
+  for i, a in self.projection:unwrap_actions() do
+    actions[a.method] = {
+      role = a.role
+    }
+  end
+
   for i, a in self.actions do
     actions[a.method] = {
       role = a.role
     }
   end
   return actions
+end
+
+function Resource:unwrap_context()
+  local context = self.projection:unwrap_context()
+  for i, item in self.context do
+    context[#context + 1] = item:unwrap()
+  end
+  return context
 end
 
 function Resource:unwrap()
@@ -64,7 +85,6 @@ function Resource:unwrap()
     entity = self.unit.entity:unwrap(),
     projection = self.projection:unwrap(),
     resource = self:unwrap_resource(),
-    actions = self:unwrap_actions(),
   }
 end
 

@@ -1,0 +1,1 @@
+-- print(yaml:stringify(resource))

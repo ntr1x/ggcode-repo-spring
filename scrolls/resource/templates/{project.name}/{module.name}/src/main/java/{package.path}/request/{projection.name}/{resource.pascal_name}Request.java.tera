@@ -1,5 +1,6 @@
 package {{package.name}}.request.{{projection.name}};
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ public interface {{resource.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestId")
     class Id {
         {%- for desc in entity.keys %}
         {# Blank line #}
@@ -21,8 +23,22 @@ public interface {{resource.pascal_name}}Request {
 
     @Data
     @Builder(toBuilder = true)
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestContext")
+    class Context {
+        {%- if resource.context | length > 0 -%}
+        {%- for desc in resource.context %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endfor -%}
+        {%- endif %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestCreate")
     class Create {
       {%- for desc in entity.columns %}
       {# Blank line #}
@@ -34,6 +50,7 @@ public interface {{resource.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestPut")
     class Put {
         {%- for desc in entity.keys %}
         {# Blank line #}
@@ -50,6 +67,7 @@ public interface {{resource.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestSelect")
     class Select {
         {%- for desc in entity.keys %}
         {# Blank line #}
@@ -66,6 +84,7 @@ public interface {{resource.pascal_name}}Request {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestUpdate")
     class Update {
         {%- for desc in entity.keys %}
         {# Blank line #}

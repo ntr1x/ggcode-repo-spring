@@ -23,11 +23,11 @@ public class {{resource.pascal_name}}Controller {
 
     private final {{resource.pascal_name}}Service {{resource.camel_name}}Service;
 
-    {%- if actions.create %}
+    {%- if resource.actions.create %}
     {# Blank line #}
     @PostMapping
-    {%- if actions.create.role != '' %}
-    @PreAuthorize("{{actions.create.role}}")
+    {%- if resource.actions.create.role != '' %}
+    @PreAuthorize("{{resource.actions.create.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model create(
@@ -37,11 +37,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.remove %}
+    {%- if resource.actions.remove %}
     {# Blank line #}
     @PostMapping("/remove")
-    {%- if actions.remove.role != '' %}
-    @PreAuthorize("{{actions.remove.role}}")
+    {%- if resource.actions.remove.role != '' %}
+    @PreAuthorize("{{resource.actions.remove.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model remove(
@@ -51,11 +51,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.update %}
+    {%- if resource.actions.update %}
     {# Blank line #}
     @PutMapping("/update")
-    {%- if actions.update.role != '' %}
-    @PreAuthorize("{{actions.update.role}}")
+    {%- if resource.actions.update.role != '' %}
+    @PreAuthorize("{{resource.actions.update.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model update(
@@ -65,11 +65,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.select %}
+    {%- if resource.actions.select %}
     {# Blank line #}
     @PostMapping("/select")
-    {%- if actions.select.role != '' %}
-    @PreAuthorize("{{actions.select.role}}")
+    {%- if resource.actions.select.role != '' %}
+    @PreAuthorize("{{resource.actions.select.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final Page<{{resource.pascal_name}}Model> select(
@@ -80,11 +80,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.delete %}
+    {%- if resource.actions.delete %}
     {# Blank line #}
     @DeleteMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if actions.delete.role != '' %}
-    @PreAuthorize("{{actions.delete.role}}")
+    {%- if resource.actions.delete.role != '' %}
+    @PreAuthorize("{{resource.actions.delete.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model remove(
@@ -101,11 +101,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.replace %}
+    {%- if resource.actions.replace %}
     {# Blank line #}
     @PutMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if actions.replace.role != '' %}
-    @PreAuthorize("{{actions.replace.role}}")
+    {%- if resource.actions.replace.role != '' %}
+    @PreAuthorize("{{resource.actions.replace.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model replace(
@@ -123,11 +123,11 @@ public class {{resource.pascal_name}}Controller {
     }
     {%- endif %}
 
-    {%- if actions.get %}
+    {%- if resource.actions.get %}
     {# Blank line #}
     @GetMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if actions.get.role != '' %}
-    @PreAuthorize("{{actions.get.role}}")
+    {%- if resource.actions.get.role != '' %}
+    @PreAuthorize("{{resource.actions.get.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model get(
