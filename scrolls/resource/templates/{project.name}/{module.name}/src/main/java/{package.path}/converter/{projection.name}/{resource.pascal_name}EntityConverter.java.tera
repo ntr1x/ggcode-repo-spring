@@ -21,10 +21,14 @@ public interface {{resource.pascal_name}}EntityConverter {
 
             return {{resource.pascal_name}}Model.builder()
                     {%- for desc in entity.keys %}
+                    {%- if projection.context.by_name is not containing(desc.name) %}
                     .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endif -%}
                     {%- endfor %}
                     {%- for desc in entity.columns %}
+                    {%- if projection.context.by_name is not containing(desc.name) %}
                     .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endif -%}
                     {%- endfor %}
                     {%- if entity.refs | length > 0 -%}
                     {%- for desc in entity.refs %}

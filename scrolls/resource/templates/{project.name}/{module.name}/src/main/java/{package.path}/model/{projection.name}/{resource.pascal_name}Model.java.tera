@@ -11,13 +11,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class {{resource.pascal_name}}Model {
     {%- for desc in entity.keys %}
+    {%- if projection.context.by_name is not containing(desc.name) %}
     {# Blank line #}
     private {{desc.java_type}} {{desc.camel_name}};
+    {%- endif -%}
     {%- endfor %}
 
     {%- for desc in entity.columns %}
+    {%- if projection.context.by_name is not containing(desc.name) %}
     {# Blank line #}
     private {{desc.java_type}} {{desc.camel_name}};
+    {%- endif -%}
     {%- endfor %}
 
     {%- if entity.refs | length > 0 -%}

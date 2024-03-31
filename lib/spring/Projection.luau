@@ -33,19 +33,35 @@ function Projection:with_rules(children: table)
 end
 
 function Projection:unwrap_actions()
-  local actions = {}
-  for i, action in self.actions do
-    actions[i] = action:unwrap()
+  local by_method = {}
+  local array = {}
+
+  for i, item in self.actions do
+    local unwrapped = item:unwrap()
+    array[i] = unwrapped
+    by_method[item.method] = unwrapped
   end
-  return actions
+
+  return {
+    by_method = by_method,
+    array = array
+  }
 end
 
 function Projection:unwrap_context()
-  local context = {}
+  local by_name = {}
+  local array = {}
+
   for i, item in self.context do
-    context[i] = item:unwrap()
+    local unwrapped = item:unwrap()
+    array[i] = unwrapped
+    by_name[item.name] = unwrapped
   end
-  return context
+
+  return {
+    by_name = by_name,
+    array = array
+  }
 end
 
 function Projection:unwrap()

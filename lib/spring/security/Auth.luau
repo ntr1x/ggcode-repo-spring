@@ -18,7 +18,7 @@ end
 function Auth:subject(name: string, column: string)
   return Auth:new({
     name = name,
-    claim = 'subject',
+    claim = 'sub',
     column = column or name,
     java_type = 'java.util.UUID',
   })

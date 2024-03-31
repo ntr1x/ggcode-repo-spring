@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 
 import java.util.Optional;
 
@@ -26,8 +27,8 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestContext")
     class Context {
-        {%- if resource.context | length > 0 -%}
-        {%- for desc in resource.context %}
+        {%- if projection.context.array | length > 0 -%}
+        {%- for desc in projection.context.array %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
         {%- endfor -%}
@@ -41,8 +42,10 @@ public interface {{resource.pascal_name}}Request {
     @Schema(name = "{{resource.pascal_name}}RequestCreate")
     class Create {
       {%- for desc in entity.columns %}
+      {%- if projection.context.by_name is not containing(desc.name) %}
       {# Blank line #}
       private Optional<{{desc.java_type}}> {{desc.camel_name}};
+      {%- endif -%}
       {%- endfor %}
     }
 
@@ -53,13 +56,17 @@ public interface {{resource.pascal_name}}Request {
     @Schema(name = "{{resource.pascal_name}}RequestPut")
     class Put {
         {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
 
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
     }
 
@@ -70,13 +77,17 @@ public interface {{resource.pascal_name}}Request {
     @Schema(name = "{{resource.pascal_name}}RequestSelect")
     class Select {
         {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
 
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
     }
 
@@ -87,13 +98,17 @@ public interface {{resource.pascal_name}}Request {
     @Schema(name = "{{resource.pascal_name}}RequestUpdate")
     class Update {
         {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
 
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
         {%- endfor %}
     }
 }

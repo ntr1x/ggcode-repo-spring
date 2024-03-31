@@ -26,17 +26,28 @@ public class {{resource.pascal_name}}Service {
     private final ConversionService conversionService;
 
     @Transactional
-    public {{resource.pascal_name}}Model create({{resource.pascal_name}}Request.Create request) {
+    public {{resource.pascal_name}}Model create(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Create request
+    ) {
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = {{unit.pascal_name}}Entity.builder();
         {# Blank line #}
         {% for desc in entity.keys %}
         {%- if desc.generator_type == 'random' and desc.java_type == 'java.util.UUID' -%}
         builder.{{desc.camel_name}}(java.util.UUID.randomUUID());
         {%- endif -%}
+        {%- endfor -%}
+        {# Blank line #}
+        {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is containing(desc.name) %}
+        builder.{{desc.camel_name}}(context.get{{desc.pascal_name}}());
+        {%- endif -%}
         {%- endfor %}
         {% for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
         {%- endfor %}
 
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.save(builder.build());
@@ -45,7 +56,10 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model remove({{resource.pascal_name}}Request.Id key) {
+    public {{resource.pascal_name}}Model remove(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key
+    ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
@@ -55,7 +69,10 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model get({{resource.pascal_name}}Request.Id key) {
+    public {{resource.pascal_name}}Model get(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key
+    ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
@@ -64,7 +81,10 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model update({{resource.pascal_name}}Request.Update request) {
+    public {{resource.pascal_name}}Model update(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Update request
+    ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(request.getId())
                 .orElseThrow();
@@ -72,8 +92,10 @@ public class {{resource.pascal_name}}Service {
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line #}
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
         {%- endfor %}
 
         entity = {{unit.camel_name}}Repository.save(builder.build());
@@ -82,7 +104,11 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model replace({{resource.pascal_name}}Request.Id key, {{resource.pascal_name}}Request.Put request) {
+    public {{resource.pascal_name}}Model replace(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key,
+        {{resource.pascal_name}}Request.Put request
+    ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
@@ -90,12 +116,16 @@ public class {{resource.pascal_name}}Service {
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line #}
         {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
         {%- endfor %}
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
         {%- endfor %}
 
         entity = {{unit.camel_name}}Repository.save(builder.build());
@@ -104,23 +134,45 @@ public class {{resource.pascal_name}}Service {
     }
 
     @Transactional
-    public Page<{{resource.pascal_name}}Model> select({{resource.pascal_name}}Request.Select request, Pageable pageable) {
+    public Page<{{resource.pascal_name}}Model> select(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Select request,
+        Pageable pageable
+    ) {
         ExampleMatcher matcher = ExampleMatcher.matchingAll();
 
         {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
-        {% for desc in entity.keys %}
+        {# Blank line #}
+        {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is containing(desc.name) %}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
+        {%- endif -%}
+        {%- endfor -%}
+        {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is containing(desc.name) %}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
+        {%- endif -%}
+        {%- endfor -%}
+        {# Blank line #}
+        {%- for desc in entity.keys %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
                     matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
                     template.set{{desc.pascal_name}}(optional.orElse(null));
                 });
+        {%- endif -%}
         {%- endfor %}
         {%- for desc in entity.columns %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
                     matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
                     template.set{{desc.pascal_name}}(optional.orElse(null));
                 });
+        {%- endif -%}
         {%- endfor %}
 
         Example<{{unit.pascal_name}}Entity> example = Example.of(template, matcher);

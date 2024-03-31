@@ -1,7 +1,9 @@
 package {{package.name}}.controller.{{projection.name}};
 
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
@@ -14,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-
 @RestController
 @Tag(name = "{{resource.pascal_name}}")
 @RequestMapping("/{{projection.name}}/{{unit.snake_name}}")
@@ -23,95 +24,101 @@ public class {{resource.pascal_name}}Controller {
 
     private final {{resource.pascal_name}}Service {{resource.camel_name}}Service;
 
-    {%- if resource.actions.create %}
+    {%- if projection.actions.by_method.create %}
     {# Blank line #}
     @PostMapping
-    {%- if resource.actions.create.role != '' %}
-    @PreAuthorize("{{resource.actions.create.role}}")
+    {%- if projection.actions.by_method.create.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.create.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model create(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Create request
     ) {
-        return {{resource.camel_name}}Service.create(request);
+        return {{resource.camel_name}}Service.create(context, request);
     }
     {%- endif %}
 
-    {%- if resource.actions.remove %}
+    {%- if projection.actions.by_method.remove %}
     {# Blank line #}
     @PostMapping("/remove")
-    {%- if resource.actions.remove.role != '' %}
-    @PreAuthorize("{{resource.actions.remove.role}}")
+    {%- if projection.actions.by_method.remove.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.remove.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model remove(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Id key
     ) {
-        return {{resource.camel_name}}Service.remove(key);
+        return {{resource.camel_name}}Service.remove(context, key);
     }
     {%- endif %}
 
-    {%- if resource.actions.update %}
+    {%- if projection.actions.by_method.update %}
     {# Blank line #}
     @PutMapping("/update")
-    {%- if resource.actions.update.role != '' %}
-    @PreAuthorize("{{resource.actions.update.role}}")
+    {%- if projection.actions.by_method.update.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.update.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public {{resource.pascal_name}}Model update(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Update request
     ) {
-        return {{resource.camel_name}}Service.update(request);
+        return {{resource.camel_name}}Service.update(context, request);
     }
     {%- endif %}
 
-    {%- if resource.actions.select %}
+    {%- if projection.actions.by_method.select %}
     {# Blank line #}
     @PostMapping("/select")
-    {%- if resource.actions.select.role != '' %}
-    @PreAuthorize("{{resource.actions.select.role}}")
+    {%- if projection.actions.by_method.select.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.select.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final Page<{{resource.pascal_name}}Model> select(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Select request,
             @ParameterObject Pageable pageable
     ) {
-        return {{resource.camel_name}}Service.select(request, pageable);
+        return {{resource.camel_name}}Service.select(context, request, pageable);
     }
     {%- endif %}
 
-    {%- if resource.actions.delete %}
+    {%- if projection.actions.by_method.delete %}
     {# Blank line #}
     @DeleteMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if resource.actions.delete.role != '' %}
-    @PreAuthorize("{{resource.actions.delete.role}}")
+    {%- if projection.actions.by_method.delete.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.delete.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model remove(
-        {%- for desc in entity.keys %}
-            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
-        {%- endfor %}
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
                 {%- for desc in entity.keys %}
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
-        return {{resource.camel_name}}Service.remove(recordKey);
+        return {{resource.camel_name}}Service.remove(context, recordKey);
     }
     {%- endif %}
 
-    {%- if resource.actions.replace %}
+    {%- if projection.actions.by_method.replace %}
     {# Blank line #}
     @PutMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if resource.actions.replace.role != '' %}
-    @PreAuthorize("{{resource.actions.replace.role}}")
+    {%- if projection.actions.by_method.replace.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.replace.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model replace(
-        {%- for desc in entity.keys %}
-            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
-        {%- endfor %}
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
+            {%- endfor %}
             @RequestBody {{resource.pascal_name}}Request.Put request
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
@@ -119,28 +126,29 @@ public class {{resource.pascal_name}}Controller {
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
-        return {{resource.camel_name}}Service.replace(recordKey, request);
+        return {{resource.camel_name}}Service.replace(context, recordKey, request);
     }
     {%- endif %}
 
-    {%- if resource.actions.get %}
+    {%- if projection.actions.by_method.get %}
     {# Blank line #}
     @GetMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
-    {%- if resource.actions.get.role != '' %}
-    @PreAuthorize("{{resource.actions.get.role}}")
+    {%- if projection.actions.by_method.get.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.get.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
     public final {{resource.pascal_name}}Model get(
-        {%- for desc in entity.keys %}
-            @RequestParam("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
-        {%- endfor %}
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
                 {%- for desc in entity.keys %}
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
-        return {{resource.camel_name}}Service.get(recordKey);
+        return {{resource.camel_name}}Service.get(context, recordKey);
     }
     {%- endif %}
 }
