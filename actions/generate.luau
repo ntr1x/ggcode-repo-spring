@@ -303,13 +303,124 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_custom
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
 
 -- Generate resources
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_order_type):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_order_status):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_payment_type):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_system, unit_payment_status):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_anonymous, unit_product):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_anonymous, unit_category):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_basket_entry):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_favorite):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_order):unwrap() }
-ggcode.generate "@/resource" { target = '@examples', variables = Resource:from(projection_profile, unit_payment):unwrap() }
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_customer)
+        :with_title("Customers")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_order_type)
+        :with_title("Dictionaries")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_order_status)
+        :with_title("Dictionaries")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_payment_type)
+        :with_title("Dictionaries")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_payment_status)
+        :with_title("Dictionaries")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_product)
+        :with_title("Products")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_category)
+        :with_title("Product Categories")
+        :unwrap()
+}
+
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile, unit_basket_entry)
+        :with_title("Basket")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile, unit_favorite)
+        :with_title("Favorites")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile, unit_order)
+        :with_title("Orders")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile, unit_payment)
+        :with_title("Payments")
+        :unwrap()
+}
+
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_product)
+        :with_title("Public")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_category)
+        :with_title("Public")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_order_type)
+        :with_title("Public")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_order_status)
+        :with_title("Public")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_payment_type)
+        :with_title("Public")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_anonymous, unit_payment_status)
+        :with_title("Public")
+        :unwrap()
+}

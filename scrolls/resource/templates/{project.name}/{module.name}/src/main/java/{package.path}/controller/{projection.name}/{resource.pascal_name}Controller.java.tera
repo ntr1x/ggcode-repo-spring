@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@Tag(name = "{{resource.pascal_name}}")
+@Tag(name = "{{resource.title}}"{% if resource.description | defined %}, description = "{{resource.description}}"{% endif %})
 @RequestMapping("/{{projection.name}}/{{unit.snake_name}}")
 @RequiredArgsConstructor
 public class {{resource.pascal_name}}Controller {
