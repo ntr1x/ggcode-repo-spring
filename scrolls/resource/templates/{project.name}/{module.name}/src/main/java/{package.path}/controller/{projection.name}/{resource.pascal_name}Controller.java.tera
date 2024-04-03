@@ -76,7 +76,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.select.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public final Page<{{resource.pascal_name}}Model> select(
+    public Page<{{resource.pascal_name}}Model> select(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Select request,
             @ParameterObject Pageable pageable
@@ -92,7 +92,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.delete.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public final {{resource.pascal_name}}Model remove(
+    public {{resource.pascal_name}}Model remove(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             {%- for desc in entity.keys %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
@@ -114,7 +114,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.replace.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public final {{resource.pascal_name}}Model replace(
+    public {{resource.pascal_name}}Model replace(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             {%- for desc in entity.keys %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
@@ -137,7 +137,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.get.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public final {{resource.pascal_name}}Model get(
+    public {{resource.pascal_name}}Model get(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             {%- for desc in entity.keys %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
