@@ -29,6 +29,8 @@ public class WebMvcSecurityConfig {
             AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver
     ) throws Exception {
         return http
+                .csrf(c -> c.disable())
+                .cors(c -> c.disable())
                 .authorizeRequests(authorize -> authorize.anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.authenticationManagerResolver(authenticationManagerResolver))
                 .build();
