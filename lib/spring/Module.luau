@@ -64,6 +64,8 @@ end
 function Module:unwrap()
   local parent_pom = self.parent:unwrap_pom()
 
+  local pascal_name = case.snakeToPascal(self.name);
+
   return {
     project = self:unwrap_project(),
     pom = {
@@ -73,8 +75,9 @@ function Module:unwrap()
     package = self:unwrap_package(),
     module = {
       name = self.name,
-      app_class = case.snakeToPascal(self.name)..'Application',
-      suite_class = case.snakeToPascal(self.name)..'Suite',
+      pascal_name = pascal_name,
+      app_class = pascal_name .. 'Application',
+      suite_class = pascal_name .. 'Suite',
     },
     service = {
       path = '/api/' .. self.name

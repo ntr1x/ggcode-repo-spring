@@ -1,1 +1,4 @@
--- print(yaml:stringify(resource))
+print(yaml:stringify({
+  resource = resource,
+  signals = signals,
+}))

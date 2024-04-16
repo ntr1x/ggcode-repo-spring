@@ -1,0 +1,7 @@
+- name: signal
+  pascal_name: Signal
+  snake_name: signal
+  camel_name: signal
+  kebab_name: signal
+  partitions: 1
+  replicas: 1

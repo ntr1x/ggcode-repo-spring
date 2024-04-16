@@ -3,6 +3,7 @@ package {{package.name}}.service.{{projection.name}};
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import org.ntr1x.common.api.annotation.Event;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -12,6 +13,7 @@ import {{package.name}}.entity.{{unit.pascal_name}}Entity;
 import {{package.name}}.repository.{{unit.pascal_name}}Repository;
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
 import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +28,10 @@ public class {{resource.pascal_name}}Service {
     private final ConversionService conversionService;
 
     @Transactional
-    public {{resource.pascal_name}}Model create(
+    {%- for signal in signals.create | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Create create(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Create request
     ) {
@@ -51,37 +56,42 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
 
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.save(builder.build());
-        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
-        return result;
+
+        {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Create
+            .builder()
+            .created(created)
+            .build();
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model remove(
+    {%- for signal in signals.remove | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Remove remove(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Id key
     ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
-        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
         {{unit.camel_name}}Repository.delete(entity);
-        return result;
+
+        return {{resource.pascal_name}}Response.Remove
+            .builder()
+            .removed(removed)
+            .build();
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model get(
-        {{resource.pascal_name}}Request.Context context,
-        {{resource.pascal_name}}Request.Id key
-    ) {
-        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(key.getId())
-                .orElseThrow();
-        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
-        return result;
-    }
-
-    @Transactional
-    public {{resource.pascal_name}}Model update(
+    {%- for signal in signals.update | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Update update(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Update request
     ) {
@@ -99,12 +109,20 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
 
         entity = {{unit.camel_name}}Repository.save(builder.build());
-        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
-        return result;
+
+        {{resource.pascal_name}}Model updated = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Update
+            .builder()
+            .updated(updated)
+            .build();
     }
 
     @Transactional
-    public {{resource.pascal_name}}Model replace(
+    {%- for signal in signals.replace | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Replace replace(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Id key,
         {{resource.pascal_name}}Request.Put request
@@ -112,6 +130,8 @@ public class {{resource.pascal_name}}Service {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
+
+        {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
 
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line #}
@@ -129,8 +149,14 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
 
         entity = {{unit.camel_name}}Repository.save(builder.build());
-        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
-        return result;
+
+        {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Replace
+            .builder()
+            .removed(removed)
+            .created(created)
+            .build();
     }
 
     @Transactional
@@ -181,4 +207,17 @@ public class {{resource.pascal_name}}Service {
                 .findAll(example, pageable)
                 .map(item -> conversionService.convert(item, {{resource.pascal_name}}Model.class));
     }
+
+    @Transactional
+    public {{resource.pascal_name}}Model get(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key
+    ) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.getId())
+                .orElseThrow();
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+
 }
