@@ -3,6 +3,8 @@ local POM = require('spring/POM')
 local Project = require('spring/Project')
 local Module = require('spring/Module')
 local Profile = require('spring/Profile')
+local Exchange = require('spring/Exchange')
+local Topic = require('spring/exchange/Topic')
 local Unit = require('spring/Unit')
 local Projection = require('spring/Projection')
 local Resource = require('spring/Resource')
@@ -17,6 +19,7 @@ local Auth = require('spring/security/Auth')
 local pom = POM:from('my.company', 'application', {
     "common_api",
     "common_web",
+    "common_events",
     "service_catalog",
     "service_customers",
     "service_basket",
@@ -239,20 +242,23 @@ unit_payment_product_ref:with_columns {
     Prop:decimal 'price',
 }
 
+local exchange_catalog = Exchange
+    :from(service_catalog)
+    :with_rules {
+        Topic:from('public_category'),
+        Topic:from('public_product'),
+    }
+
 local projection_system = Projection
     :from("system")
     :with_rules {
-        Action:create "hasAuthority('realm:admin')";
-        Action:remove "hasAuthority('realm:admin')";
-        Action:remove "isAuthenticated()";
-        Action:delete "isAuthenticated()";
-        Action:update "isAuthenticated()";
-        Action:replace "isAuthenticated()";
-        Action:get "isAuthenticated()";
-        Action:select "isAuthenticated()";
-        Action:update "hasAuthority('realm:admin')";
         Action:get "hasAuthority('realm:admin')";
         Action:select "hasAuthority('realm:admin')";
+        Action:create "hasAuthority('realm:admin')";
+        Action:remove "hasAuthority('realm:admin')";
+        Action:delete "hasAuthority('realm:admin')";
+        Action:update "hasAuthority('realm:admin')";
+        Action:replace "hasAuthority('realm:admin')";
     }
 
 local projection_anonymous = Projection
@@ -283,6 +289,9 @@ ggcode.generate "@/module_web" { target = '@examples', variables = service_baske
 ggcode.generate "@/module_web" { target = '@examples', variables = service_catalog:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = service_customers:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = service_payments:unwrap() }
+
+-- Generate Exchanges
+ggcode.generate "@/exchange" { target = '@examples', variables = exchange_catalog:unwrap() }
 
 -- Generate Units
 ggcode.generate "@/unit" { target = '@examples', variables = unit_category:unwrap() }
@@ -343,6 +352,7 @@ ggcode.generate "@/resource" {
     variables = Resource
         :from(projection_system, unit_product)
         :with_title("Products")
+        :with_expanded_signals('public_product')
         :unwrap()
 }
 ggcode.generate "@/resource" {
@@ -350,9 +360,9 @@ ggcode.generate "@/resource" {
     variables = Resource
         :from(projection_system, unit_category)
         :with_title("Product Categories")
+        :with_expanded_signals('public_category')
         :unwrap()
 }
-
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
@@ -381,7 +391,6 @@ ggcode.generate "@/resource" {
         :with_title("Payments")
         :unwrap()
 }
-
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource

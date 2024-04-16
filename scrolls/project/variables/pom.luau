@@ -13,6 +13,7 @@
   properties = {
     ["flatten-maven-plugin.version"] = "1.5.0",
     ["logstash.logback.version"] = "7.3",
+    ["cloudevents.version"] = "3.0.0"
   },
   dependency_management = {
     dependencies = {
@@ -25,6 +26,9 @@
       { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.2.19" },
       { group_id = "io.vavr", artifact_id = "vavr", version = "0.10.4" },
       { group_id = "net.logstash.logback", artifact_id = "logstash-logback-encoder", version = "${logstash.logback.version}" },
+      { group_id = "io.cloudevents", artifact_id = "cloudevents-spring", version = "${cloudevents.version}" },
+      { group_id = "io.cloudevents", artifact_id = "cloudevents-kafka", version = "${cloudevents.version}" },
+      { group_id = "io.cloudevents", artifact_id = "cloudevents-json-jackson", version = "${cloudevents.version}" },
     }
   },
 }

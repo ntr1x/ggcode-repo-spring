@@ -1,0 +1,47 @@
+package {{package.name}}.response.{{projection.name}};
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+
+public interface {{resource.pascal_name}}Response {
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}ResponseCreate")
+    class Create {
+        private {{resource.pascal_name}}Model created;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}ResponseUpdate")
+    class Update {
+        private {{resource.pascal_name}}Model updated;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}ResponseUpdate")
+    class Remove {
+        private {{resource.pascal_name}}Model removed;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}ResponseReplace")
+    class Replace {
+        private {{resource.pascal_name}}Model removed;
+        private {{resource.pascal_name}}Model created;
+    }
+}

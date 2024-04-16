@@ -1,9 +1,12 @@
 package {{package.name}};
 
+import {{package.name}}.config.{{module.pascal_name}}Config;
+
 import org.ntr1x.common.web.config.OpenApiConfig;
 import org.ntr1x.common.web.config.OpenApiSecurityConfig;
 import org.ntr1x.common.web.config.WebMvcConfig;
 import org.ntr1x.common.web.config.WebMvcSecurityConfig;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -13,8 +16,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         WebMvcConfig.class,
         WebMvcSecurityConfig.class,
         OpenApiConfig.class,
-        OpenApiSecurityConfig.class
+        OpenApiSecurityConfig.class,
+
 })
+@ComponentScan(basePackageClasses = {{module.pascal_name}}Config.class)
 @EnableJpaRepositories
 public class {{module.suite_class}} {
 }

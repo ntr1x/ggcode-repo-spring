@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
 import {{package.name}}.service.{{projection.name}}.{{resource.pascal_name}}Service;
 import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -31,7 +32,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.create.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public {{resource.pascal_name}}Model create(
+    public {{resource.pascal_name}}Response.Create create(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Create request
     ) {
@@ -46,7 +47,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.remove.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public {{resource.pascal_name}}Model remove(
+    public {{resource.pascal_name}}Response.Remove remove(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Id key
     ) {
@@ -61,27 +62,11 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.update.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public {{resource.pascal_name}}Model update(
+    public {{resource.pascal_name}}Response.Update update(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Update request
     ) {
         return {{resource.camel_name}}Service.update(context, request);
-    }
-    {%- endif %}
-
-    {%- if projection.actions.by_method.select %}
-    {# Blank line #}
-    @PostMapping("/select")
-    {%- if projection.actions.by_method.select.role != '' %}
-    @PreAuthorize("{{projection.actions.by_method.select.role}}")
-    @SecurityRequirement(name = "Bearer")
-    {%- endif %}
-    public Page<{{resource.pascal_name}}Model> select(
-            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
-            @RequestBody {{resource.pascal_name}}Request.Select request,
-            @ParameterObject Pageable pageable
-    ) {
-        return {{resource.camel_name}}Service.select(context, request, pageable);
     }
     {%- endif %}
 
@@ -92,7 +77,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.delete.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public {{resource.pascal_name}}Model remove(
+    public {{resource.pascal_name}}Response.Remove remove(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             {%- for desc in entity.keys %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
@@ -114,7 +99,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.replace.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
-    public {{resource.pascal_name}}Model replace(
+    public {{resource.pascal_name}}Response.Replace replace(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             {%- for desc in entity.keys %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
@@ -127,6 +112,22 @@ public class {{resource.pascal_name}}Controller {
                 {%- endfor %}
                 .build();
         return {{resource.camel_name}}Service.replace(context, recordKey, request);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.select %}
+    {# Blank line #}
+    @PostMapping("/select")
+    {%- if projection.actions.by_method.select.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.select.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    public Page<{{resource.pascal_name}}Model> select(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody {{resource.pascal_name}}Request.Select request,
+            @ParameterObject Pageable pageable
+    ) {
+        return {{resource.camel_name}}Service.select(context, request, pageable);
     }
     {%- endif %}
 
