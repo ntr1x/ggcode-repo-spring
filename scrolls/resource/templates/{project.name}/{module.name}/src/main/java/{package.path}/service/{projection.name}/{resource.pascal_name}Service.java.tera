@@ -29,7 +29,7 @@ public class {{resource.pascal_name}}Service {
 
     @Transactional
     {%- for signal in signals.create | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
     {%- endfor %}
     public {{resource.pascal_name}}Response.Create create(
         {{resource.pascal_name}}Request.Context context,
@@ -67,7 +67,7 @@ public class {{resource.pascal_name}}Service {
 
     @Transactional
     {%- for signal in signals.remove | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
     {%- endfor %}
     public {{resource.pascal_name}}Response.Remove remove(
         {{resource.pascal_name}}Request.Context context,
@@ -89,7 +89,7 @@ public class {{resource.pascal_name}}Service {
 
     @Transactional
     {%- for signal in signals.update | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
     {%- endfor %}
     public {{resource.pascal_name}}Response.Update update(
         {{resource.pascal_name}}Request.Context context,
@@ -120,7 +120,7 @@ public class {{resource.pascal_name}}Service {
 
     @Transactional
     {%- for signal in signals.replace | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
     {%- endfor %}
     public {{resource.pascal_name}}Response.Replace replace(
         {{resource.pascal_name}}Request.Context context,
