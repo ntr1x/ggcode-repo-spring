@@ -1,7 +1,8 @@
 package {{package.name}};
 
 import {{package.name}}.config.{{module.pascal_name}}Config;
-
+import org.ntr1x.common.events.config.CommonEventsBeanConfig;
+import org.ntr1x.common.events.config.CommonEventsKafkaConfig;
 import org.ntr1x.common.web.config.OpenApiConfig;
 import org.ntr1x.common.web.config.OpenApiSecurityConfig;
 import org.ntr1x.common.web.config.WebMvcConfig;
@@ -17,7 +18,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         WebMvcSecurityConfig.class,
         OpenApiConfig.class,
         OpenApiSecurityConfig.class,
-
+        CommonEventsKafkaConfig.class,
+        CommonEventsBeanConfig.class
 })
 @ComponentScan(basePackageClasses = {{module.pascal_name}}Config.class)
 @EnableJpaRepositories
