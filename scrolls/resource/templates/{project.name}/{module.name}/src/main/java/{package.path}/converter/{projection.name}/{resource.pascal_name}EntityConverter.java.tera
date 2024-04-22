@@ -20,18 +20,18 @@ public interface {{resource.pascal_name}}EntityConverter {
             ConversionService conversionService = applicationContext.getBean(ConversionService.class);
 
             return {{resource.pascal_name}}Model.builder()
-                    {%- for desc in entity.keys %}
+                    {%- for desc in entity.keys.array %}
                     {%- if projection.context.by_name is not containing(desc.name) %}
                     .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
-                    {%- for desc in entity.columns %}
+                    {%- for desc in entity.columns.array %}
                     {%- if projection.context.by_name is not containing(desc.name) %}
                     .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
                     {%- if entity.refs | length > 0 -%}
-                    {%- for desc in entity.refs %}
+                    {%- for desc in entity.refs.array %}
                     .{{desc.camel_name}}(conversionService.convert(
                             source.get{{desc.pascal_name}}(),
                             {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model.class))

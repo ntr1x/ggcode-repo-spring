@@ -1,0 +1,45 @@
+package {{package.name}}.listener;
+
+import io.cloudevents.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
+
+{% if listener.batch -%}
+import java.util.List;
+{# Blank line #}
+{% endif -%}
+
+@Slf4j
+@Component
+public class {{listener.pascal_name}}Listener {
+{% if listener.batch %}
+    @KafkaListener(groupId = "{{listener.group_id}}", topicPattern = "{{listener.topic_pattern}}")
+    public void listen(List<ConsumerRecord<String, CloudEvent>> list, Acknowledgment ack) {
+        try {
+            log.info("Attempt to process cloud events");
+
+            // TODO Implement
+
+            ack.acknowledge();
+        } catch (Exception e) {
+            log.error("Cannot process cloud events", e);
+        }
+    }
+{% else %}
+    @KafkaListener(groupId = "{{listener.group_id}}", topicPattern = "{{listener.topic_pattern}}")
+    public void listen(ConsumerRecord<String, CloudEvent> record, Acknowledgment ack) {
+        try {
+            log.info("Attempt to process cloud event");
+
+            // TODO Implement
+
+            ack.acknowledge();
+        } catch (Exception e) {
+            log.error("Cannot process cloud event", e);
+        }
+    }
+{% endif -%}
+}

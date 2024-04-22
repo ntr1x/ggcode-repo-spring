@@ -1,3 +1,4 @@
+local Meta = require('core/Meta')
 local case = require('core/util/string/case')
 
 local Entity = {
@@ -47,27 +48,51 @@ function Entity:with_columns(children: table)
 end
 
 function Entity:unwrap_keys()
-  local keys = {}
+  local by_name = Meta:table {}
+  local array = Meta:array {}
+
   for i, key in self.keys do
-    keys[i] = key:unwrap()
+    local unwrapped = key:unwrap()
+    array[#array + 1] = unwrapped
+    by_name[unwrapped.name] = unwrapped
   end
-  return keys
+
+  return {
+    by_name = by_name,
+    array = array,
+  }
 end
 
 function Entity:unwrap_columns()
-  local columns = {}
+  local by_name = Meta:table {}
+  local array = Meta:array {}
+
   for i, column in self.columns do
-    columns[i] = column:unwrap()
+    local unwrapped = column:unwrap()
+    array[#array + 1] = unwrapped
+    by_name[unwrapped.name] = unwrapped
   end
-  return columns
+
+  return {
+    by_name = by_name,
+    array = array,
+  }
 end
 
 function Entity:unwrap_refs()
-  local refs = {}
+  local by_name = Meta:table {}
+  local array = Meta:array {}
+
   for i, ref in self.refs do
-    refs[i] = ref:unwrap()
+    local unwrapped = ref:unwrap()
+    array[#array + 1] = unwrapped
+    by_name[unwrapped.name] = unwrapped
   end
-  return refs
+
+  return {
+    by_name = by_name,
+    array = array,
+  }
 end
 
 function Entity:unwrap()
@@ -82,43 +107,5 @@ function Entity:unwrap()
     refs = self:unwrap_refs(),
   }
 end
-
--- local function entity (table_name: string)
---   local schema, name = table_name:match("([^.]+).([^.]+)")
---   return function (children: table)
-
---     local keys = {}
---     local columns = {}
---     local refs = {}
-
---     for _, child in children do
---       local item = if type(child) == 'function' then child() else child
---       if item.type == 'pk' then
---         keys[#keys + 1] = item
---       elseif item.type == 'prop' then
---         columns[#columns + 1] = item
---       elseif item.type == 'ref' then
---         refs[#refs + 1] = item
---       end
---     end
-
---     local pk = (if #keys > 0 then keys[1] else nil)
-
---     local res = {
---       pk = pk,
---       schema = schema,
---       name = case.snakeToPascal(name),
---       camel_name = case.snakeToCamel(name),
---       pascal_name = case.snakeToPascal(name),
---       snake_name = name,
---       table = name,
---       keys = keys,
---       columns = columns,
---       refs = refs,
---     }
-
---     return res
---   end
--- end
 
 return Entity

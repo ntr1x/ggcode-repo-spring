@@ -8,10 +8,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.ntr1x.common.api.annotation.Event;
-import org.ntr1x.common.events.CommonEventsConstants;
+import org.ntr1x.common.events.CloudEventsConstants;
 import org.ntr1x.common.events.model.CloudEventRoute;
 import org.ntr1x.common.events.model.CloudEventTemplate;
-import org.ntr1x.common.events.service.CommonEventsRegistryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -21,6 +20,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -40,10 +40,7 @@ public class EventAspect {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private CommonEventsRegistryService commonEventsRegistryService;
-
-    @Autowired
-    @Qualifier(CommonEventsConstants.KAFKA_TEMPLATE_CLOUD_EVENT)
+    @Qualifier(CloudEventsConstants.KAFKA_TEMPLATE_CLOUD_EVENT)
     private KafkaTemplate<String, CloudEvent> cloudEventKafkaTemplate;
 
     @Around(value = "@annotation(annotation)", argNames = "annotation")
@@ -68,36 +65,42 @@ public class EventAspect {
             evaluationContext.setVariable("result", result);
             evaluationContext.setVariable("params", params);
 
-            Object payload = EXPRESSION_PARSER
-                    .parseExpression(annotation.payloadEl())
-                    .getValue(evaluationContext, Object.class);
+            Boolean isEnabled = ObjectUtils.isEmpty(annotation.conditionEl())
+                ? true
+                : EXPRESSION_PARSER
+                    .parseExpression(annotation.conditionEl())
+                    .getValue(evaluationContext, Boolean.class);
 
-            CloudEventRoute.CloudEventRouteBuilder routeBuilder = Optional
-                    .ofNullable(commonEventsRegistryService.getRoute(annotation.route()))
-                    .map(CloudEventRoute::toBuilder)
-                    .orElseGet(CloudEventRoute::builder);
+            if (isEnabled != null && isEnabled) {
 
-            Optional.of(annotation.topic())
-                    .map(topic -> topic.isEmpty() ? null : topic)
-                    .ifPresent(topic -> routeBuilder.topic(topic));
+                Object payload = EXPRESSION_PARSER
+                        .parseExpression(annotation.payloadEl())
+                        .getValue(evaluationContext, Object.class);
 
-            Optional.of(annotation.type())
-                    .map(type -> type.isEmpty() ? null : type)
-                    .ifPresent(type -> routeBuilder.type(type));
+                CloudEventRoute.CloudEventRouteBuilder routeBuilder = CloudEventRoute.builder();
 
-            Optional.of(annotation.source())
-                    .map(source -> source.isEmpty() ? null : source)
-                    .ifPresent(source -> routeBuilder.source(URI.create(source)));
+                Optional.of(annotation.topic())
+                        .map(topic -> topic.isEmpty() ? null : topic)
+                        .ifPresent(topic -> routeBuilder.topic(topic));
 
-            CloudEventRoute route = routeBuilder.build();
+                Optional.of(annotation.type())
+                        .map(type -> type.isEmpty() ? null : type)
+                        .ifPresent(type -> routeBuilder.type(type));
 
-            CloudEventTemplate template = CloudEventTemplate
-                    .builder()
-                    .objectMapper(objectMapper)
-                    .kafkaTemplate(cloudEventKafkaTemplate)
-                    .build();
+                Optional.of(annotation.source())
+                        .map(source -> source.isEmpty() ? null : source)
+                        .ifPresent(source -> routeBuilder.source(URI.create(source)));
 
-            template.send(payload, route);
+                CloudEventRoute route = routeBuilder.build();
+
+                CloudEventTemplate template = CloudEventTemplate
+                        .builder()
+                        .objectMapper(objectMapper)
+                        .kafkaTemplate(cloudEventKafkaTemplate)
+                        .build();
+
+                template.send(payload, route);
+            }
 
             return result;
         } catch (Throwable th) {

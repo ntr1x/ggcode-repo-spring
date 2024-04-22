@@ -1,14 +1,29 @@
 local Meta = require('core/Meta')
+local ARRAY = require('core/util/array')
 local case = require('core/util/string/case')
-local Signal = require('spring/exchange/Signal')
+local Signal = require('spring/resource/Signal')
+local View = require('spring/resource/View')
+local Request = require('spring/resource/Request')
+local Override = require('spring/resource/Override')
+local Filter = require('spring/resource/Filter')
 
 local Resource = {
   __type = 'Resource',
+
+  Signal = Signal,
+  View = View,
+  Request = Request,
+  Override = Override,
+  Filter = Filter,
+
   title = nil,
   description = nil,
   projection = nil,
-  signals = nil,
   unit = nil,
+  signals = nil,
+  views = nil,
+  requests = nil,
+  overrides = nil,
 }
 
 function Resource:new(o)
@@ -22,7 +37,10 @@ function Resource:from(projection: Projection, unit: Unit)
   return Resource:new({
     projection = projection,
     unit = unit,
-    signals = {},
+    signals = Meta:array {},
+    views = Meta:array {},
+    requests = Meta:array {},
+    overrides = Meta:array {},
   })
 end
 
@@ -42,6 +60,12 @@ function Resource:with_rules(children: table)
   for _, child in children do
     if child.__type == 'Signal' then
       self.signals[#self.signals + 1] = child
+    elseif child.__type == 'View' then
+      self.views[#self.views + 1] = child
+    elseif child.__type == 'Request' then
+      self.requests[#self.requests + 1] = child
+    elseif child.__type == 'Override' then
+      self.overrides[#self.overrides + 1] = child
     end
   end
 
@@ -103,6 +127,49 @@ function Resource:unwrap_signals()
   return signals
 end
 
+function Resource:unwrap_requests()
+  local by_name = {}
+
+  for i, request in self.requests do
+    by_name[request.name] = request:unwrap(self)
+  end
+
+  for i, request_name in { 'create', 'put', 'update', 'select', 'delete' } do
+    if not by_name[request_name] then
+      local request = Request:from(request_name, self.unit)
+      by_name[request_name] = request:unwrap(self)
+    end
+  end
+
+  return by_name
+end
+
+function Resource:unwrap_views()
+  local by_view = Meta:table {}
+  local by_column = Meta:table {}
+
+  for _, child in self.views do
+    local unwrapped = child:unwrap()
+
+    local columns = by_view[child.name] or Meta:array({})
+
+    for i, c in child.columns do
+      columns[#columns + 1] = c
+
+      local views = by_column[c] or Meta:array({})
+      views[#views + 1] = child.name
+      by_column[c] = views
+    end
+
+    by_view[child.name] = columns
+  end
+
+  return {
+    by_view = by_view,
+    by_column = by_column,
+  }
+end
+
 function Resource:unwrap()
   return {
     project = self.unit.module:unwrap_project(),
@@ -113,6 +180,8 @@ function Resource:unwrap()
     projection = self.projection:unwrap(),
     resource = self:unwrap_resource(),
     signals = self:unwrap_signals(),
+    views = self:unwrap_views(),
+    requests = self:unwrap_requests(),
   }
 end
 

@@ -1,8 +1,9 @@
 package {{package.name}};
 
 import {{package.name}}.config.{{module.pascal_name}}Config;
-import org.ntr1x.common.events.config.CommonEventsBeanConfig;
-import org.ntr1x.common.events.config.CommonEventsKafkaConfig;
+import org.ntr1x.common.api.config.CommonBeanConfig;
+import org.ntr1x.common.events.config.CloudEventsBeanConfig;
+import org.ntr1x.common.events.config.CloudEventsKafkaConfig;
 import org.ntr1x.common.web.config.OpenApiConfig;
 import org.ntr1x.common.web.config.OpenApiSecurityConfig;
 import org.ntr1x.common.web.config.WebMvcConfig;
@@ -14,12 +15,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @Import({
+        CommonBeanConfig.class,
         WebMvcConfig.class,
         WebMvcSecurityConfig.class,
         OpenApiConfig.class,
         OpenApiSecurityConfig.class,
-        CommonEventsKafkaConfig.class,
-        CommonEventsBeanConfig.class
+        CloudEventsKafkaConfig.class,
+        CloudEventsBeanConfig.class
 })
 @ComponentScan(basePackageClasses = {{module.pascal_name}}Config.class)
 @EnableJpaRepositories

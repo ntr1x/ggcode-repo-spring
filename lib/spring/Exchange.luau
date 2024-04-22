@@ -1,4 +1,5 @@
 local case = require('core/util/string/case')
+local Meta = require('core/Meta')
 local Module = require('spring/Module')
 
 local Exchange = {
@@ -14,12 +15,30 @@ function Exchange:new(o)
   return o
 end
 
+function Exchange:clone()
+  local topics = Meta:array {}
+  for i, topic in self.topics do
+    topics[#topics + 1] = topic
+  end
+
+  return Exchange:new({
+    module = self.module,
+    name = self.name,
+    topics = topics,
+  })
+end
+
 function Exchange:from(module: Module, name: string)
   return Exchange:new({
     module = module,
     name = name,
     topics = {},
   })
+end
+
+function Exchange:with_module(module: Module)
+  self.module = module
+  return self
 end
 
 function Exchange:with_rules(children: table)

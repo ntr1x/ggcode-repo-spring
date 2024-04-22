@@ -22,16 +22,5 @@ public class {{exchange.pascal_name}}Exchange {
                 {%- endif %}
                 .build();
     }
-    {%- endfor -%}
-    {#- Blank line #}
-    {% for topic in topics %}
-    @Bean
-    public CloudEventRoute {{topic.camel_name}}Route() {
-        return CloudEventRoute
-                .builder()
-                .topic("{{topic.snake_name}}")
-                .source(URI.create("service:{{module.name}}"))
-                .build();
-    }
     {%- endfor %}
 }

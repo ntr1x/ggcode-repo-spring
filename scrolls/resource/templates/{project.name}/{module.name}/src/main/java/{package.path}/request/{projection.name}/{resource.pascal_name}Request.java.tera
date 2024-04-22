@@ -16,7 +16,7 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestId")
     class Id {
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
         {%- endfor %}
@@ -41,8 +41,12 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestCreate")
     class Create {
-      {%- for desc in entity.columns %}
-      {%- if projection.context.by_name is not containing(desc.name) %}
+      {%- for desc in requests.create.columns.array %}
+      {%- if projection.context.by_name is containing(desc.name) %}
+      {#- Ignore -#}
+      {%- elif ((views.by_column is containing(desc.name))) %}
+      {#- Ignore -#}
+      {%- else %}
       {# Blank line #}
       private Optional<{{desc.java_type}}> {{desc.camel_name}};
       {%- endif -%}
@@ -55,14 +59,14 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestPut")
     class Put {
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
@@ -76,14 +80,14 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestSelect")
     class Select {
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
@@ -97,14 +101,14 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestUpdate")
     class Update {
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};

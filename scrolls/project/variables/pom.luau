@@ -13,7 +13,8 @@
   properties = {
     ["flatten-maven-plugin.version"] = "1.5.0",
     ["logstash.logback.version"] = "7.3",
-    ["cloudevents.version"] = "3.0.0"
+    ["cloudevents.version"] = "3.0.0",
+    ["commons-text.version"] = "1.12.0"
   },
   dependency_management = {
     dependencies = {
@@ -29,6 +30,7 @@
       { group_id = "io.cloudevents", artifact_id = "cloudevents-spring", version = "${cloudevents.version}" },
       { group_id = "io.cloudevents", artifact_id = "cloudevents-kafka", version = "${cloudevents.version}" },
       { group_id = "io.cloudevents", artifact_id = "cloudevents-json-jackson", version = "${cloudevents.version}" },
+      { group_id = "org.apache.commons", artifact_id = "commons-text", version = "${commons-text.version}" },
     }
   },
 }

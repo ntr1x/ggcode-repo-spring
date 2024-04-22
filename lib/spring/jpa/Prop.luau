@@ -58,6 +58,14 @@ function Prop:long(name: string)
   })
 end
 
+function Prop:boolean(name: string)
+  return Prop:new({
+    name = name,
+    java_type = "java.lang.Boolean",
+    db_type = "boolean"
+  })
+end
+
 function Prop:datetime(name: string)
   return Prop:new({
     name = name,
