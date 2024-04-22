@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import org.ntr1x.common.api.annotation.Event;
+import org.ntr1x.common.api.service.EvaluatorService;
+import org.ntr1x.common.api.service.GeneratorService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -26,30 +28,42 @@ public class {{resource.pascal_name}}Service {
 
     private final {{unit.pascal_name}}Repository {{unit.camel_name}}Repository;
     private final ConversionService conversionService;
+    private final EvaluatorService evaluatorService;
+    private final GeneratorService generatorService;
 
+    {%- if projection.actions.by_method.create %}
+    {# Blank Line #}
     @Transactional
     {%- for signal in signals.create | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
     {%- endfor %}
     public {{resource.pascal_name}}Response.Create create(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Create request
     ) {
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = {{unit.pascal_name}}Entity.builder();
-        {# Blank line #}
-        {% for desc in entity.keys %}
-        {%- if desc.generator_type == 'random' and desc.java_type == 'java.util.UUID' -%}
-        builder.{{desc.camel_name}}(java.util.UUID.randomUUID());
+        {# Blank line -#}
+        {% for desc in requests.create.keys.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- else %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
         {%- endif -%}
         {%- endfor -%}
         {# Blank line #}
-        {%- for desc in entity.columns %}
-        {%- if projection.context.by_name is containing(desc.name) %}
-        builder.{{desc.camel_name}}(context.get{{desc.pascal_name}}());
-        {%- endif -%}
-        {%- endfor %}
-        {% for desc in entity.columns %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {% for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- else %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
         {%- endif -%}
@@ -64,10 +78,13 @@ public class {{resource.pascal_name}}Service {
             .created(created)
             .build();
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.remove or projection.actions.by_method.delete %}
+    {# Blank Line #}
     @Transactional
     {%- for signal in signals.remove | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
     {%- endfor %}
     public {{resource.pascal_name}}Response.Remove remove(
         {{resource.pascal_name}}Request.Context context,
@@ -86,10 +103,13 @@ public class {{resource.pascal_name}}Service {
             .removed(removed)
             .build();
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.update %}
+    {# Blank Line #}
     @Transactional
     {%- for signal in signals.update | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
     {%- endfor %}
     public {{resource.pascal_name}}Response.Update update(
         {{resource.pascal_name}}Request.Context context,
@@ -101,7 +121,7 @@ public class {{resource.pascal_name}}Service {
         {# Blank line #}
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line #}
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
@@ -117,10 +137,13 @@ public class {{resource.pascal_name}}Service {
             .updated(updated)
             .build();
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.replace %}
+    {# Blank Line #}
     @Transactional
     {%- for signal in signals.replace | default(value = []) %}
-    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}", payloadEl = "{{signal.payloadEl}}")
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
     {%- endfor %}
     public {{resource.pascal_name}}Response.Replace replace(
         {{resource.pascal_name}}Request.Context context,
@@ -135,13 +158,13 @@ public class {{resource.pascal_name}}Service {
 
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line #}
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
         {%- endif -%}
         {%- endfor %}
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
@@ -158,7 +181,10 @@ public class {{resource.pascal_name}}Service {
             .created(created)
             .build();
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.select %}
+    {# Blank Line #}
     @Transactional
     public Page<{{resource.pascal_name}}Model> select(
         {{resource.pascal_name}}Request.Context context,
@@ -169,20 +195,20 @@ public class {{resource.pascal_name}}Service {
 
         {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
         {# Blank line #}
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is containing(desc.name) %}
         matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
         template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
         {%- endif -%}
         {%- endfor -%}
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is containing(desc.name) %}
         matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
         template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
         {%- endif -%}
         {%- endfor -%}
         {# Blank line #}
-        {%- for desc in entity.keys %}
+        {%- for desc in entity.keys.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
@@ -191,7 +217,7 @@ public class {{resource.pascal_name}}Service {
                 });
         {%- endif -%}
         {%- endfor %}
-        {%- for desc in entity.columns %}
+        {%- for desc in entity.columns.array %}
         {%- if projection.context.by_name is not containing(desc.name) %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
@@ -207,7 +233,10 @@ public class {{resource.pascal_name}}Service {
                 .findAll(example, pageable)
                 .map(item -> conversionService.convert(item, {{resource.pascal_name}}Model.class));
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.get %}
+    {# Blank Line #}
     @Transactional
     public {{resource.pascal_name}}Model get(
         {{resource.pascal_name}}Request.Context context,
@@ -219,5 +248,5 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
         return result;
     }
-
+    {%- endif %}
 }

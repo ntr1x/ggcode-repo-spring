@@ -15,6 +15,8 @@ scrolls:
   path: scrolls/resource
 - name: exchange
   path: scrolls/exchange
+- name: listener
+  path: scrolls/listener
 repositories:
 - name: core
   uri: git@github.com:ntr1x/ggcode-repo-core.git

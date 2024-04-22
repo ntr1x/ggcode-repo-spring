@@ -1,11 +1,13 @@
 package {{package.name}}.response.{{projection.name}};
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+import org.ntr1x.common.api.views.Views;
 
 public interface {{resource.pascal_name}}Response {
     @Data
@@ -14,6 +16,7 @@ public interface {{resource.pascal_name}}Response {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}ResponseCreate")
     class Create {
+        @JsonView(Views.Default.class)
         private {{resource.pascal_name}}Model created;
     }
 
@@ -23,6 +26,7 @@ public interface {{resource.pascal_name}}Response {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}ResponseUpdate")
     class Update {
+        @JsonView(Views.Default.class)
         private {{resource.pascal_name}}Model updated;
     }
 
@@ -32,6 +36,7 @@ public interface {{resource.pascal_name}}Response {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}ResponseUpdate")
     class Remove {
+        @JsonView(Views.Default.class)
         private {{resource.pascal_name}}Model removed;
     }
 
@@ -41,7 +46,10 @@ public interface {{resource.pascal_name}}Response {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}ResponseReplace")
     class Replace {
+        @JsonView(Views.Default.class)
         private {{resource.pascal_name}}Model removed;
+
+        @JsonView(Views.Default.class)
         private {{resource.pascal_name}}Model created;
     }
 }

@@ -13,21 +13,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(schema = "{{entity.schema}}", name = "{{entity.table}}")
 public class {{unit.pascal_name}}Entity {
-    {%- for desc in entity.keys %}
+    {%- for desc in entity.keys.array %}
     {# Blank line #}
     @Id
     @Column(columnDefinition = "{{desc.column_definition}}", updatable = {{desc.updatable}})
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 
-    {%- for desc in entity.columns %}
+    {%- for desc in entity.columns.array %}
     {# Blank line #}
     @Column(name = "{{desc.name}}")
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 
     {%- if entity.refs | length > 0 -%}
-    {%- for desc in entity.refs %}
+    {%- for desc in entity.refs.array %}
     {# Blank line #}
     @ManyToOne
     @JoinColumn(name = "{{desc.column}}", insertable = false, updatable = false)

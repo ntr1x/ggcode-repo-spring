@@ -1,8 +1,15 @@
+local Meta = require('core/Meta')
+local Override = require('spring/resource/Override')
+
 local Projection = {
   __type = 'Projection',
+
+  Override = Override,
+
   name = nil,
-  actions = {},
-  context = {},
+  actions = nil,
+  context = nil,
+  overrides = nil,
 }
 
 function Projection:new(o)
@@ -14,7 +21,12 @@ end
 
 function Projection:from(name: string, children: table)
   return Projection
-    :new({ name = name, actions = {}, context = {} })
+    :new({
+      name = name,
+      actions = Meta:array {},
+      context = Meta:array {},
+      overrides = Meta:array {},
+    })
     :with_rules(children)
 end
 
@@ -26,6 +38,8 @@ function Projection:with_rules(children: table)
       self.actions[#self.actions + 1] = child
     elseif child.__type == 'Auth' then
       self.context[#self.context + 1] = child
+    elseif child.__type == 'Override' then
+      self.overrides[#self.overrides + 1] = child
     end
   end
 

@@ -1,5 +1,6 @@
 package {{package.name}}.controller.{{projection.name}};
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import {{package.name}}.service.{{projection.name}}.{{resource.pascal_name}}Serv
 import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
 import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
 
+import org.ntr1x.common.api.views.Views;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.create.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Create.class)
     public {{resource.pascal_name}}Response.Create create(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Create request
@@ -47,6 +50,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.remove.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Remove.class)
     public {{resource.pascal_name}}Response.Remove remove(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Id key
@@ -62,6 +66,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.update.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Update.class)
     public {{resource.pascal_name}}Response.Update update(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Update request
@@ -72,19 +77,20 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.delete %}
     {# Blank line #}
-    @DeleteMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    @DeleteMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- if projection.actions.by_method.delete.role != '' %}
     @PreAuthorize("{{projection.actions.by_method.delete.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Remove.class)
     public {{resource.pascal_name}}Response.Remove remove(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
-            {%- for desc in entity.keys %}
+            {%- for desc in entity.keys.array %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
             {%- endfor %}
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
-                {%- for desc in entity.keys %}
+                {%- for desc in entity.keys.array %}
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
@@ -94,20 +100,21 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.replace %}
     {# Blank line #}
-    @PutMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    @PutMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- if projection.actions.by_method.replace.role != '' %}
     @PreAuthorize("{{projection.actions.by_method.replace.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Replace.class)
     public {{resource.pascal_name}}Response.Replace replace(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
-            {%- for desc in entity.keys %}
+            {%- for desc in entity.keys.array %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
             {%- endfor %}
             @RequestBody {{resource.pascal_name}}Request.Put request
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
-                {%- for desc in entity.keys %}
+                {%- for desc in entity.keys.array %}
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
@@ -122,6 +129,7 @@ public class {{resource.pascal_name}}Controller {
     @PreAuthorize("{{projection.actions.by_method.select.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Select.class)
     public Page<{{resource.pascal_name}}Model> select(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
             @RequestBody {{resource.pascal_name}}Request.Select request,
@@ -133,19 +141,20 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.get %}
     {# Blank line #}
-    @GetMapping("/i/{% for desc in entity.keys %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    @GetMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- if projection.actions.by_method.get.role != '' %}
     @PreAuthorize("{{projection.actions.by_method.get.role}}")
     @SecurityRequirement(name = "Bearer")
     {%- endif %}
+    @JsonView(Views.Select.class)
     public {{resource.pascal_name}}Model get(
             @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
-            {%- for desc in entity.keys %}
+            {%- for desc in entity.keys.array %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
             {%- endfor %}
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
-                {%- for desc in entity.keys %}
+                {%- for desc in entity.keys.array %}
                 .{{desc.camel_name}}({{desc.camel_name}})
                 {%- endfor %}
                 .build();
