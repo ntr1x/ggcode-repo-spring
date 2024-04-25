@@ -24,6 +24,7 @@ local Resource = {
   views = nil,
   requests = nil,
   overrides = nil,
+  filters = nil,
 }
 
 function Resource:new(o)
@@ -41,6 +42,7 @@ function Resource:from(projection: Projection, unit: Unit)
     views = Meta:array {},
     requests = Meta:array {},
     overrides = Meta:array {},
+    filters = Meta:array {},
   })
 end
 
@@ -66,6 +68,8 @@ function Resource:with_rules(children: table)
       self.requests[#self.requests + 1] = child
     elseif child.__type == 'Override' then
       self.overrides[#self.overrides + 1] = child
+    elseif child.__type == 'Filter' then
+      self.filters[#self.filters + 1] = child
     end
   end
 
@@ -134,7 +138,7 @@ function Resource:unwrap_requests()
     by_name[request.name] = request:unwrap(self)
   end
 
-  for i, request_name in { 'create', 'put', 'update', 'select', 'delete' } do
+  for i, request_name in { 'create', 'replace', 'update', 'select', 'delete' } do
     if not by_name[request_name] then
       local request = Request:from(request_name, self.unit)
       by_name[request_name] = request:unwrap(self)

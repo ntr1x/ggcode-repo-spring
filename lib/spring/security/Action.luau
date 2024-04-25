@@ -1,18 +1,19 @@
 local Meta = require('core/Meta')
-local Filter = require('spring/security/action/Filter')
 local Override = require('spring/resource/Override')
 local Role = require('spring/security/action/Role')
+local Filter = require('spring/resource/Filter')
 
 local Action = {
   __type = 'Action',
 
-  Filter = Filter,
   Override = Override,
   Role = Role,
+  Filter = Filter,
 
   method = nil,
   role = nil,
   overrides = nil,
+  filters = nil,
 }
 
 function Action:new(o)
@@ -27,6 +28,7 @@ function Action:from(method: string, role: string)
     method = method,
     role = role,
     overrides = Meta:array {},
+    filters = Meta:array {},
   })
 end
 
@@ -67,6 +69,8 @@ function Action:with_rules(children: table)
       self.role = child.expression
     elseif child.__type == 'Override' then
       self.overrides[#self.overrides + 1] = child
+    elseif child.__type == 'Filter' then
+      self.filters[#self.filters + 1] = child
     end
   end
 

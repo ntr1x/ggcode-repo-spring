@@ -10,7 +10,9 @@ import org.ntr1x.common.events.CloudEventsConstants;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.ContainerProperties;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,6 +26,15 @@ public class CloudEventsKafkaConfig {
                 new StringDeserializer(),
                 new CloudEventDeserializer()
         );
+    }
+
+    @Bean(CloudEventsConstants.CONTAINER_FACTORY_CLOUD_EVENT)
+    public ConcurrentKafkaListenerContainerFactory<String, CloudEvent> cloudEventContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CloudEvent> factory = new ConcurrentKafkaListenerContainerFactory();
+        factory.setConsumerFactory(cloudEventConsumerFactory());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setAutoStartup(true);
+        return factory;
     }
 
     @Bean(CloudEventsConstants.PRODUCER_FACTORY_CLOUD_EVENT)

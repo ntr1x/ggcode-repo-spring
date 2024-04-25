@@ -240,6 +240,7 @@ unit_order_status:with_columns {
 
 unit_payment:with_columns {
     PK:uuid 'id',
+    Prop:uuid 'customer_id',
     Prop:uuid 'order_id',
     Prop:uuid 'payment_status_id',
     Prop:uuid 'payment_type_id',
@@ -338,6 +339,7 @@ local projection_profile = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
+        Projection.Filter:from_context "customer_id";
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -354,6 +356,7 @@ local projection_profile_verify_phone = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
+        Projection.Filter:from_context "customer_id";
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -368,6 +371,7 @@ local projection_profile_verify_email = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
+        Projection.Filter:from_context "customer_id";
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -429,7 +433,7 @@ ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
         :from(projection_profile_verify_phone, unit_customer_verify_phone)
-        :with_title("Customers")
+        :with_title("Customer Profile")
         :with_rules({
             Resource.Signal:create('verify_phone', '#result.created');
             Resource.View:kafka({ "secret", "is_confirmed" });
@@ -442,9 +446,10 @@ ggcode.generate "@/resource" {
                 Resource.Override:from_hidden('secret');
             };
             Resource.Request:update(unit_customer_verify_phone):with_rules {
-                Resource.Filter:from('is_confirmed', "false");
-                Resource.Filter:from('email', "#request.email");
-                Resource.Filter:from('secret', "#request.secret");
+                Resource.Override:from_hidden('id');
+                Resource.Filter:from_value('is_confirmed', 'false');
+                Resource.Filter:from_request('phone');
+                Resource.Filter:from_request('secret');
             };
         })
         :unwrap()
@@ -453,7 +458,7 @@ ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
         :from(projection_profile_verify_email, unit_customer_verify_email)
-        :with_title("Customers")
+        :with_title("Customer Profile")
         :with_rules({
             Resource.Signal:create('verify_email', '#result.created');
             Resource.View:kafka({ "secret", "is_confirmed" });
@@ -466,9 +471,10 @@ ggcode.generate "@/resource" {
                 Resource.Override:from_hidden('secret');
             };
             Resource.Request:update(unit_customer_verify_email):with_rules {
-                Resource.Filter:from('is_confirmed', "false");
-                Resource.Filter:from('email', "#request.email");
-                Resource.Filter:from('secret', "#request.secret");
+                Resource.Override:from_hidden('id');
+                Resource.Filter:from_value('is_confirmed', 'false');
+                Resource.Filter:from_request('email');
+                Resource.Filter:from_request('secret');
             };
         })
         :unwrap()
@@ -595,17 +601,27 @@ ggcode.generate "@/listener" {
         :from(gateway_payments, "public_payment")
         :unwrap()
 }
-
 ggcode.generate "@/listener" {
     target = '@examples',
     variables = Listener
         :from(gateway_payments, "public_order")
         :unwrap()
 }
-
 ggcode.generate "@/listener" {
     target = '@examples',
     variables = Listener
         :from(gateway_customers, "public_customer")
+        :unwrap()
+}
+ggcode.generate "@/listener" {
+    target = '@examples',
+    variables = Listener
+        :from(gateway_customers, "verify_phone")
+        :unwrap()
+}
+ggcode.generate "@/listener" {
+    target = '@examples',
+    variables = Listener
+        :from(gateway_customers, "verify_email")
         :unwrap()
 }

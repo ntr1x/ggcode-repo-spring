@@ -3,6 +3,7 @@ package {{package.name}}.listener;
 import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.ntr1x.common.events.CloudEventsConstants;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,12 @@ import java.util.List;
 @Component
 public class {{listener.pascal_name}}Listener {
 {% if listener.batch %}
-    @KafkaListener(groupId = "{{listener.group_id}}", topicPattern = "{{listener.topic_pattern}}")
+    @KafkaListener(
+        containerFactory = CloudEventsConstants.CONTAINER_FACTORY_CLOUD_EVENT,
+        batch = "true",
+        groupId = "{{listener.group_id}}",
+        topicPattern = "{{listener.topic_pattern}}"
+    )
     public void listen(List<ConsumerRecord<String, CloudEvent>> list, Acknowledgment ack) {
         try {
             log.info("Attempt to process cloud events");
@@ -29,7 +35,11 @@ public class {{listener.pascal_name}}Listener {
         }
     }
 {% else %}
-    @KafkaListener(groupId = "{{listener.group_id}}", topicPattern = "{{listener.topic_pattern}}")
+    @KafkaListener(
+        containerFactory = CloudEventsConstants.CONTAINER_FACTORY_CLOUD_EVENT,
+        groupId = "{{listener.group_id}}",
+        topicPattern = "{{listener.topic_pattern}}"
+    )
     public void listen(ConsumerRecord<String, CloudEvent> record, Acknowledgment ack) {
         try {
             log.info("Attempt to process cloud event");
