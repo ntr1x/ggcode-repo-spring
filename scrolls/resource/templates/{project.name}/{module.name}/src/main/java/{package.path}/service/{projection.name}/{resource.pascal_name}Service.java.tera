@@ -50,6 +50,8 @@ public class {{resource.pascal_name}}Service {
         builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
         {%- elif desc is containing('override') and desc.override is containing('expression') %}
         builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
         {%- else %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
@@ -63,6 +65,8 @@ public class {{resource.pascal_name}}Service {
         builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
         {%- elif desc is containing('override') and desc.override is containing('expression') %}
         builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
         {%- else %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
@@ -115,14 +119,52 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Update request
     ) {
+        {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
+                .builder()
+                {%- for desc in requests.update.keys.array %}
+                {%- if desc is containing('override') and desc.override is containing('value') %}
+                .{{desc.camel_name}}({{desc.override.value}})
+                {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                .{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}())
+                {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                .{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                {%- elif desc is containing('override') and desc.override.is_hidden %}
+                {#- Ignore -#}
+                {%- else %}
+                .{{desc.camel_name}}(request.get{{desc.pascal_name}}())
+                {%- endif -%}
+                {%- endfor %}
+                {%- for f in requests.update.filters %}
+                {%- if f is containing('value') %}
+                .{{f.camel_name}}({{f.value}})
+                {%- elif f is containing('expression') %}
+                .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
+                {%- elif f is containing('context_value') %}
+                .{{f.camel_name}}(context.get{{f.context_value.pascal_name}}())
+                {%- elif f is containing('request_value') %}
+                .{{f.camel_name}}(request.get{{f.request_value.pascal_name}}().orElseThrow())
+                {%- else %}
+                {#- Ignore -#}
+                {%- endif -%}
+                {%- endfor %}
+                .build();
+
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(request.getId())
+                .findOne(Example.of(example))
                 .orElseThrow();
-        {# Blank line #}
+
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
-        {# Blank line #}
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {# Blank line -#}
+        {% for desc in requests.update.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
         {%- endif -%}
@@ -148,10 +190,40 @@ public class {{resource.pascal_name}}Service {
     public {{resource.pascal_name}}Response.Replace replace(
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Id key,
-        {{resource.pascal_name}}Request.Put request
+        {{resource.pascal_name}}Request.Replace request
     ) {
+        {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
+                .builder()
+                {%- for desc in requests.replace.keys.array %}
+                {%- if desc is containing('override') and desc.override is containing('value') %}
+                .{{desc.camel_name}}({{desc.override.value}})
+                {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                .{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}())
+                {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                .{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                {%- elif desc is containing('override') and desc.override.is_hidden %}
+                {#- Ignore -#}
+                {%- else %}
+                .{{desc.camel_name}}(key.get{{desc.pascal_name}}())
+                {%- endif -%}
+                {%- endfor %}
+                {%- for f in requests.replace.filters %}
+                {%- if f is containing('value') %}
+                .{{f.camel_name}}({{f.value}})
+                {%- elif f is containing('expression') %}
+                .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
+                {%- elif f is containing('context_value') %}
+                .{{f.camel_name}}(context.get{{f.context_value.pascal_name}}())
+                {%- elif f is containing('request_value') %}
+                .{{f.camel_name}}(request.get{{f.request_value.pascal_name}}().orElseThrow())
+                {%- else %}
+                {#- Ignore -#}
+                {%- endif -%}
+                {%- endfor %}
+                .build();
+
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(key.getId())
+                .findOne(Example.of(example))
                 .orElseThrow();
 
         {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
@@ -194,22 +266,24 @@ public class {{resource.pascal_name}}Service {
         ExampleMatcher matcher = ExampleMatcher.matchingAll();
 
         {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
+        {# Blank line -#}
+        {% for desc in requests.select.keys.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
         {# Blank line #}
-        {%- for desc in entity.keys.array %}
-        {%- if projection.context.by_name is containing(desc.name) %}
         matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
-        template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
-        {%- endif -%}
-        {%- endfor -%}
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is containing(desc.name) %}
-        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
-        template.set{{desc.pascal_name}}(context.get{{desc.pascal_name}}());
-        {%- endif -%}
-        {%- endfor -%}
+        template.set{{desc.pascal_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
         {# Blank line #}
-        {%- for desc in entity.keys.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        {# Blank line #}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
                     matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
@@ -217,8 +291,24 @@ public class {{resource.pascal_name}}Service {
                 });
         {%- endif -%}
         {%- endfor %}
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {# Blank line -#}
+        {% for desc in requests.select.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        {# Blank line #}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        {# Blank line #}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        {# Blank line #}
+        matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());
+        template.set{{desc.pascal_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
         Optional.ofNullable(request.get{{desc.pascal_name}}())
                 .ifPresent(optional -> {
                     matcher.withMatcher("{{desc.camel_name}}", m -> m.exact());

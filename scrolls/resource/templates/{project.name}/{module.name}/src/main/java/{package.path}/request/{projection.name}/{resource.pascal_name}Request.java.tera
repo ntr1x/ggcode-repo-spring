@@ -35,84 +35,106 @@ public interface {{resource.pascal_name}}Request {
         {%- endif %}
     }
 
+    {%- if projection.actions.by_method.create %}
+    {# Blank Line #}
     @Data
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestCreate")
     class Create {
-      {%- for desc in requests.create.columns.array %}
-      {%- if projection.context.by_name is containing(desc.name) %}
-      {#- Ignore -#}
-      {%- elif ((views.by_column is containing(desc.name))) %}
-      {#- Ignore -#}
-      {%- else %}
-      {# Blank line #}
-      private Optional<{{desc.java_type}}> {{desc.camel_name}};
-      {%- endif -%}
-      {%- endfor %}
+        {%- for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.replace %}
+    {# Blank Line #}
     @Data
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestPut")
-    class Put {
-        {%- for desc in entity.keys.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+    class Replace {
+        {%- for desc in requests.replace.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {%- for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.select %}
+    {# Blank Line #}
     @Data
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestSelect")
     class Select {
-        {%- for desc in entity.keys.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {%- for desc in requests.select.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {%- for desc in requests.select.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
     }
+    {%- endif %}
 
+    {%- if projection.actions.by_method.update %}
+    {# Blank Line #}
     @Data
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestUpdate")
     class Update {
-        {%- for desc in entity.keys.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {%- for desc in requests.update.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
 
-        {%- for desc in entity.columns.array %}
-        {%- if projection.context.by_name is not containing(desc.name) %}
+        {%- for desc in requests.update.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
         {# Blank line #}
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
     }
+    {%- endif %}
 }

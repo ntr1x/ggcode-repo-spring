@@ -111,7 +111,7 @@ public class {{resource.pascal_name}}Controller {
             {%- for desc in entity.keys.array %}
             @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
             {%- endfor %}
-            @RequestBody {{resource.pascal_name}}Request.Put request
+            @RequestBody {{resource.pascal_name}}Request.Replace request
     ) {
         {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
                 {%- for desc in entity.keys.array %}

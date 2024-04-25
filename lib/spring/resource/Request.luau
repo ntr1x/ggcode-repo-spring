@@ -41,8 +41,8 @@ function Request:select(unit: Unit)
   return Request:from('select', unit)
 end
 
-function Request:put(unit: Unit)
-  return Request:from('put', unit)
+function Request:replace(unit: Unit)
+  return Request:from('replace', unit)
 end
 
 function Request:with_rules(children: table)
@@ -97,6 +97,36 @@ function Request:unwrap_overrides(parent_resource: table)
   return overrides
 end
 
+function Request:unwrap_filters(parent_resource: table)
+  local filters = Meta:array {}
+
+  for _, item in parent_resource.projection.filters do
+    local unwrapped = item:unwrap()
+    filters[#filters + 1] = unwrapped
+  end
+
+  for _, action in parent_resource.projection.actions do
+    if action.method == self.name then
+      for _, item in action.filters do
+        local unwrapped = item:unwrap()
+        filters[#filters + 1] = unwrapped
+      end
+    end
+  end
+
+  for _, item in parent_resource.filters do
+    local unwrapped = item:unwrap()
+    filters[#filters + 1] = unwrapped
+  end
+
+  for _, item in self.filters do
+    local unwrapped = item:unwrap()
+    filters[#filters + 1] = unwrapped
+  end
+
+  return filters
+end
+
 function unwrap_children(children: table, overrides: table)
   local by_name = Meta:table {}
   local array = Meta:array {}
@@ -132,6 +162,7 @@ end
 
 function Request:unwrap(parent_resource: table)
   local overrides = self:unwrap_overrides(parent_resource)
+  local filters = self:unwrap_filters(parent_resource)
 
   return {
     name = self.name,
@@ -139,6 +170,7 @@ function Request:unwrap(parent_resource: table)
     columns = self:unwrap_columns(overrides),
     refs = self:unwrap_refs(overrides),
     overrides = overrides,
+    filters = filters,
   }
 end
 
