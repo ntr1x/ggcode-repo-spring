@@ -7,6 +7,8 @@ local Prop = {
   java_type = nil,
   db_type = nil,
   column_definition = nil,
+  user_type = nil,
+  is_lob = nil,
 }
 
 function Prop:new(o)
@@ -82,10 +84,44 @@ function Prop:datetime_tz(name: string)
   })
 end
 
+function Prop:json(name: string)
+  return Prop:new({
+    name = name,
+    java_type = "com.fasterxml.jackson.databind.JsonNode",
+    db_type = "json"
+  })
+end
+
+function Prop:jsonb(name: string)
+  return Prop:new({
+    name = name,
+    java_type = "com.fasterxml.jackson.databind.JsonNode",
+    db_type = "jsonb"
+  })
+end
+
 function Prop:setup(overrides: table)
   for k,v in overrides do
     self[k] = v
   end
+end
+
+function Prop:with_column_definition(column_definition: string)
+  self.column_definition = column_definition
+  return self
+end
+
+function Prop:with_user_type(user_type: string)
+  self.user_type = user_type
+  return self
+end
+
+function Prop:with_lob(is_lob: boolean)
+  if is_lob == nil then
+    is_lob = true
+  end
+  self.is_lob = is_lob
+  return self
 end
 
 function Prop:unwrap()
@@ -98,6 +134,8 @@ function Prop:unwrap()
     java_type = self.java_type,
     db_type = self.db_type,
     column_definition = self.column_definition,
+    user_type = self.user_type,
+    is_lob = self.is_lob,
   }
 end
 

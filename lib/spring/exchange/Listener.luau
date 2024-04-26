@@ -59,6 +59,11 @@ function Listener:with_concurrency(concurrency: string)
   return self
 end
 
+function Listener:with_batch_flag(batch: boolean)
+  self.batch = batch
+  return self
+end
+
 function Listener:unwrap_listener()
   return {
     name = self.name,
