@@ -22,7 +22,7 @@ public class CloudEventsKafkaConfig {
     @Bean(CloudEventsConstants.CONSUMER_FACTORY_CLOUD_EVENT)
     public ConsumerFactory<String, CloudEvent> cloudEventConsumerFactory() {
         return new DefaultKafkaConsumerFactory<>(
-                kafkaProperties.buildConsumerProperties(),
+                kafkaProperties.buildConsumerProperties(null),
                 new StringDeserializer(),
                 new CloudEventDeserializer()
         );
@@ -40,7 +40,7 @@ public class CloudEventsKafkaConfig {
     @Bean(CloudEventsConstants.PRODUCER_FACTORY_CLOUD_EVENT)
     public ProducerFactory<String, CloudEvent> cloudEventProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
-                kafkaProperties.buildProducerProperties(),
+                kafkaProperties.buildProducerProperties(null),
                 new StringSerializer(),
                 new CloudEventSerializer()
         );

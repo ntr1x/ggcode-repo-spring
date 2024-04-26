@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 @Data
 @Builder(toBuilder = true)
@@ -22,7 +23,13 @@ public class {{unit.pascal_name}}Entity {
 
     {%- for desc in entity.columns.array %}
     {# Blank line #}
-    @Column(name = "{{desc.name}}")
+    @Column(name = "{{desc.name}}"{% if desc.column_definition %}, columnDefinition = "{{desc.column_definition}}"{% endif %})
+    {%- if desc.user_type %}
+    @Type({{desc.user_type}}.class)
+    {%- endif %}
+    {%- if desc.is_lob %}
+    @Lob
+    {%- endif %}
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 

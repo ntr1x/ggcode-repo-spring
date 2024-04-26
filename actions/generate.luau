@@ -25,6 +25,7 @@ local pom = POM:from('my.company', 'application', {
     "service_customers",
     "service_basket",
     "service_payments",
+    "service_events",
     "gateway_payments",
     "gateway_customers",
 })
@@ -51,13 +52,17 @@ local service_payments = Module
     :from(project, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8083))
 
+local service_events = Module
+    :from(project, 'service_events')
+    :with_profile('local', profile_local:copy():with_port(8084))
+
 local gateway_payments = Module
     :from(project, 'gateway_payments')
-    :with_profile('local', profile_local:copy():with_port(8084))
+    :with_profile('local', profile_local:copy():with_port(8085))
 
 local gateway_customers = Module
     :from(project, 'gateway_customers')
-    :with_profile('local', profile_local:copy():with_port(8085))
+    :with_profile('local', profile_local:copy():with_port(8086))
 
 local unit_category = Unit
     :from(service_catalog, "public.category")
@@ -75,11 +80,7 @@ local unit_product = Unit
         Prop:text 'description',
         Prop:decimal 'price',
         Prop:uuid 'category_id',
-        Ref:new {
-            name = 'category',
-            column = 'category_id',
-            unit = unit_category,
-        },
+        Ref:new { name = 'category', column = 'category_id', unit = unit_category, },
     }
 
 local unit_customer = Unit
@@ -99,11 +100,7 @@ local unit_customer_verify_phone = Unit
         Prop:text 'phone',
         Prop:int 'secret',
         Prop:boolean 'is_confirmed',
-        Ref:new {
-            name = 'customer',
-            column = 'customer_id',
-            unit = unit_customer
-        },
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
     }
 
 local unit_customer_verify_email = Unit
@@ -114,11 +111,23 @@ local unit_customer_verify_email = Unit
         Prop:text 'email',
         Prop:text 'secret',
         Prop:boolean 'is_confirmed',
-        Ref:new {
-            name = 'customer',
-            column = 'customer_id',
-            unit = unit_customer
-        },
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
+    }
+
+local unit_event = Unit
+    :from(service_events, "public.event")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:text 'topic',
+        Prop:text 'content_type',
+        Prop:text 'ce_type',
+        Prop:text 'ce_source',
+        Prop:text 'ce_specification',
+        Prop:text 'ce_id',
+        Prop:jsonb('payload')
+            :with_column_definition('jsonb')
+            :with_user_type('io.hypersistence.utils.hibernate.type.json.JsonBinaryType')
+            :with_lob(true),
     }
 
 local unit_basket_customer_ref = Unit
@@ -145,16 +154,8 @@ local unit_basket_entry = Unit
         Prop:uuid 'customer_id',
         Prop:uuid 'product_id',
         Prop:int 'quantity',
-        Ref:new {
-            name = 'customer',
-            column = 'customer_id',
-            unit = unit_basket_customer_ref
-        },
-        Ref:new {
-            name = 'product',
-            column = 'product_id',
-            unit = unit_basket_product_ref
-        },
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
+        Ref:new { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
     }
 
 local unit_favorite = Unit
@@ -163,16 +164,8 @@ local unit_favorite = Unit
         PK:uuid 'id',
         Prop:uuid 'customer_id',
         Prop:uuid 'product_id',
-        Ref:new {
-            name = 'customer',
-            column = 'customer_id',
-            unit = unit_basket_customer_ref
-        },
-        Ref:new {
-            name = 'product',
-            column = 'product_id',
-            unit = unit_basket_product_ref
-        },
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
+        Ref:new { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
     }
 
 local unit_order = Unit:from(service_payments, "public.order")
@@ -192,21 +185,9 @@ unit_order:with_columns {
     Prop:int 'order_status_id',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
-    Ref:new {
-        name = 'customer',
-        column = 'customer_id',
-        unit = unit_payment_customer_ref
-    },
-    Ref:new {
-        name = 'order_type',
-        column = 'order_type_id',
-        unit = unit_order_type
-    },
-    Ref:new {
-        name = 'order_status',
-        column = 'order_status_id',
-        unit = unit_order_status
-    },
+    Ref:new { name = 'customer', column = 'customer_id', unit = unit_payment_customer_ref },
+    Ref:new { name = 'order_type', column = 'order_type_id', unit = unit_order_type },
+    Ref:new { name = 'order_status', column = 'order_status_id', unit = unit_order_status },
 }
 
 unit_order_type:with_columns {
@@ -220,16 +201,8 @@ unit_order_entry:with_columns {
     Prop:uuid 'product_id',
     Prop:uuid 'order_id',
     Prop:int 'quantity',
-    Ref:new {
-        name = 'order',
-        column = 'order_id',
-        unit = unit_order
-    },
-    Ref:new {
-        name = 'product',
-        column = 'product_id',
-        unit = unit_payment_product_ref
-    },
+    Ref:new { name = 'order', column = 'order_id', unit = unit_order },
+    Ref:new { name = 'product', column = 'product_id', unit = unit_payment_product_ref },
 }
 
 unit_order_status:with_columns {
@@ -247,16 +220,8 @@ unit_payment:with_columns {
     Prop:decimal 'value',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
-    Ref:new {
-        name = 'payment_status',
-        column = 'payment_status_id',
-        unit = unit_payment_status
-    },
-    Ref:new {
-        name = 'payment_type',
-        column = 'payment_type_id',
-        unit = unit_payment_type
-    },
+    Ref:new { name = 'payment_status', column = 'payment_status_id', unit = unit_payment_status },
+    Ref:new { name = 'payment_type', column = 'payment_type_id', unit = unit_payment_type },
 }
 
 unit_payment_type:with_columns {
@@ -283,6 +248,14 @@ unit_payment_product_ref:with_columns {
     Prop:text 'name',
     Prop:decimal 'price',
 }
+
+local exchange_service_events = Exchange
+    :from(service_catalog)
+    :with_rules {
+        Topic:from('public_customers'),
+        Topic:from('public_category'),
+        Topic:from('public_product'),
+    }
 
 local exchange_service_catalog = Exchange
     :from(service_catalog)
@@ -390,6 +363,7 @@ ggcode.generate "@/module_web" { target = '@examples', variables = service_baske
 ggcode.generate "@/module_web" { target = '@examples', variables = service_catalog:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = service_customers:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = service_payments:unwrap() }
+ggcode.generate "@/module_web" { target = '@examples', variables = service_events:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = gateway_customers:unwrap() }
 ggcode.generate "@/module_web" { target = '@examples', variables = gateway_payments:unwrap() }
 
@@ -399,6 +373,7 @@ ggcode.generate "@/exchange" { target = '@examples', variables = exchange_servic
 ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_customers:unwrap() }
 ggcode.generate "@/exchange" { target = '@examples', variables = exchange_gateway_payments:unwrap() }
 ggcode.generate "@/exchange" { target = '@examples', variables = exchange_gateway_customers:unwrap() }
+ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_events:unwrap() }
 
 -- Generate Units
 ggcode.generate "@/unit" { target = '@examples', variables = unit_category:unwrap() }
@@ -419,6 +394,7 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_type:u
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_status:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_customer_ref:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
+ggcode.generate "@/unit" { target = '@examples', variables = unit_event:unwrap() }
 
 -- Generate resources
 ggcode.generate "@/resource" {
@@ -526,6 +502,13 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
+        :from(projection_system, unit_event)
+        :with_title("Events")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
         :from(projection_profile, unit_basket_entry)
         :with_title("Basket")
         :unwrap()
@@ -623,5 +606,13 @@ ggcode.generate "@/listener" {
     target = '@examples',
     variables = Listener
         :from(gateway_customers, "verify_email")
+        :unwrap()
+}
+ggcode.generate "@/listener" {
+    target = '@examples',
+    variables = Listener
+        :from(service_events, "public_event")
+        :with_topic_pattern("public_.*")
+        :with_batch_flag(true)
         :unwrap()
 }
