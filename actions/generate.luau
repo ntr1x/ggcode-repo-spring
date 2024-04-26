@@ -250,7 +250,7 @@ unit_payment_product_ref:with_columns {
 }
 
 local exchange_service_events = Exchange
-    :from(service_catalog)
+    :from(service_events)
     :with_rules {
         Topic:from('public_customers'),
         Topic:from('public_category'),
@@ -355,6 +355,31 @@ local projection_profile_verify_email = Projection
         Action:delete "isAuthenticated()";
     }
 
+local projection_profile_payment = Projection
+    :from("profile")
+    :with_rules {
+        -- User can see but cannot update his payments directly
+        Auth:subject "customer_id";
+        Projection.Filter:from_context "customer_id";
+        Projection.Override:from_context "customer_id";
+        Action:get "isAuthenticated()";
+        Action:select "isAuthenticated()";
+    }
+
+local projection_profile_order = Projection
+    :from("profile")
+    :with_rules {
+        -- User can submit an order and see order history
+        Auth:subject "customer_id";
+        Projection.Filter:from_context "customer_id";
+        Projection.Override:from_context "customer_id";
+        Action:get "isAuthenticated()";
+        Action:select "isAuthenticated()";
+        Action:create("isAuthenticated()"):with_rules {
+            Action.Override:from_value("id", "generatorService.randomUUID()");
+        };
+    }
+
 -- Generate Project
 ggcode.generate "@/project" { target = '@examples', variables = project:unwrap() }
 
@@ -396,7 +421,8 @@ ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_custom
 ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_event:unwrap() }
 
--- Generate resources
+-- Generate system resources
+
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
@@ -502,10 +528,20 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
+        :from(projection_system, unit_payment)
+        :with_title("Payments")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
         :from(projection_system, unit_event)
         :with_title("Events")
         :unwrap()
 }
+
+-- Generate personal resources
+
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
@@ -523,17 +559,20 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
-        :from(projection_profile, unit_order)
+        :from(projection_profile_order, unit_order)
         :with_title("Orders")
         :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
-        :from(projection_profile, unit_payment)
+        :from(projection_profile_payment, unit_payment)
         :with_title("Payments")
         :unwrap()
 }
+
+-- Publicly accessible resources
+
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
@@ -578,6 +617,7 @@ ggcode.generate "@/resource" {
 }
 
 -- Generate listeners
+
 ggcode.generate "@/listener" {
     target = '@examples',
     variables = Listener

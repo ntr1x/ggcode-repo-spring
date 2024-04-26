@@ -73,7 +73,7 @@ public class {{resource.pascal_name}}Service {
         {%- endif -%}
         {%- endfor %}
 
-        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.save(builder.build());
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
 
         {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
 
@@ -170,7 +170,7 @@ public class {{resource.pascal_name}}Service {
         {%- endif -%}
         {%- endfor %}
 
-        entity = {{unit.camel_name}}Repository.save(builder.build());
+        entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
 
         {{resource.pascal_name}}Model updated = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
 
@@ -243,7 +243,7 @@ public class {{resource.pascal_name}}Service {
         {%- endif -%}
         {%- endfor %}
 
-        entity = {{unit.camel_name}}Repository.save(builder.build());
+        entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
 
         {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
 
