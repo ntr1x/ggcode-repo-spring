@@ -10,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class GrantedAuthoritiesExtractor implements Converter<Jwt, Collection<GrantedAuthority>> {
@@ -22,33 +21,44 @@ public class GrantedAuthoritiesExtractor implements Converter<Jwt, Collection<Gr
         String azp = (String) claims.get("azp");
 
         List<String> clientRoles = Optional
-                .ofNullable(claims)
-                .map(s -> (Map) s.get("resource_access"))
-                .map(s -> (Map) s.get(azp))
-                .map(s -> (List<String>) s.get("roles"))
+                .of(claims)
+                .map(s -> (Map<?, ?>) s.get("resource_access"))
+                .map(s -> (Map<?, ?>) s.get(azp))
+                .map(s -> {
+                    Object roles = s.get("roles");
+                    return roles instanceof List<?>
+                            ? (List<?>) roles
+                            : Collections.emptyList();
+                })
                 .stream()
-                .flatMap(s -> s.stream())
+                .flatMap(Collection::stream)
+                .map(Object::toString)
                 .map(s -> "role:" + s.toUpperCase())
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> realmRoles = Optional
-                .ofNullable(claims)
-                .map(s -> (Map) s.get("realm_access"))
-                .map(s -> (List<String>) s.get("roles"))
+                .of(claims)
+                .map(s -> (Map<?, ?>) s.get("realm_access"))
+                .map(s -> {
+                    Object roles = s.get("roles");
+                    return roles instanceof List<?>
+                            ? (List<?>) roles
+                            : Collections.emptyList();
+                })
                 .stream()
-                .flatMap(s -> s.stream())
-                .map(s -> s.toString())
+                .flatMap(Collection::stream)
+                .map(Object::toString)
                 .map(s -> "realm:" + s)
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> scopes = Optional
-                .ofNullable(claims)
+                .of(claims)
                 .map(s -> (String) s.get("scope"))
                 .stream()
                 .flatMap(s -> Arrays.stream(s.split(" ")))
-                .map(s -> s.trim())
+                .map(String::trim)
                 .map(s -> "scope:" + s)
-                .collect(Collectors.toList());
+                .toList();
 
         Collection<String> authorities = new LinkedHashSet<>();
         authorities.addAll(scopes);
@@ -57,7 +67,8 @@ public class GrantedAuthoritiesExtractor implements Converter<Jwt, Collection<Gr
         return authorities
                 .stream()
                 .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+                .map(GrantedAuthority.class::cast)
+                .toList();
     }
 
     @Data

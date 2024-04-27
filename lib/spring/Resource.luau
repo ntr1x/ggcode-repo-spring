@@ -95,6 +95,7 @@ function Resource:with_expanded_signals(topic: string)
   local signals = {
     Signal:create(topic, '#result.created'),
     Signal:update(topic, '#result.updated'),
+    Signal:upsert(topic, '#result.updated'),
     Signal:remove(topic, '#result.removed'),
     Signal:replace(topic, '#result.removed', 'removed'),
     Signal:replace(topic, '#result.created', 'created'),
@@ -138,7 +139,7 @@ function Resource:unwrap_requests()
     by_name[request.name] = request:unwrap(self)
   end
 
-  for i, request_name in { 'create', 'replace', 'update', 'select', 'delete' } do
+  for i, request_name in { 'create', 'replace', 'update', 'upsert', 'select', 'get', 'delete', 'find' } do
     if not by_name[request_name] then
       local request = Request:from(request_name, self.unit)
       by_name[request_name] = request:unwrap(self)

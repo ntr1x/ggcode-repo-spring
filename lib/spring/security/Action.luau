@@ -12,6 +12,7 @@ local Action = {
 
   method = nil,
   role = nil,
+  route = nil,
   overrides = nil,
   filters = nil,
 }
@@ -49,6 +50,10 @@ function Action:update(role: string)
   return Action:from('update', role)
 end
 
+function Action:upsert(role: string)
+  return Action:from('upsert', role)
+end
+
 function Action:replace(role: string)
   return Action:from('replace', role)
 end
@@ -59,6 +64,15 @@ end
 
 function Action:select(role: string)
   return Action:from('select', role)
+end
+
+function Action:find(role: string)
+  return Action:from('find', role)
+end
+
+function Action:with_route(route: string)
+  self.route = route
+  return self
 end
 
 function Action:with_rules(children: table)
@@ -81,6 +95,7 @@ function Action:unwrap()
   return {
     method = self.method,
     role = self.role,
+    route = self.route,
   }
 end
 

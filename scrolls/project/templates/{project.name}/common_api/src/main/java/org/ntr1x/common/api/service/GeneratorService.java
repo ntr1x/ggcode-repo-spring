@@ -24,7 +24,7 @@ public class GeneratorService {
                 new RandomStringGenerator.Builder()
                         .withinRange('0', 'z')
                         .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS)
-                        .build();
+                        .get();
         return randomStringGenerator.generate(size);
     }
 }

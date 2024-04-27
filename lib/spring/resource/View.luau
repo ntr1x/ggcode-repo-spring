@@ -32,6 +32,10 @@ function View:update(columns: table)
   return View:from('Update', columns)
 end
 
+function View:upsert(columns: table)
+  return View:from('Upsert', columns)
+end
+
 function View:remove(columns: table)
   return View:from('Remove', columns)
 end

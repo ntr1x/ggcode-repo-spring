@@ -34,6 +34,10 @@ function Signal:update(topic: string, payload_el: string, event_type: string)
   return Signal:from('update', topic, payload_el, event_type or 'updated')
 end
 
+function Signal:upsert(topic: string, payload_el: string, event_type: string)
+  return Signal:from('upsert', topic, payload_el, event_type or 'upserted')
+end
+
 function Signal:remove(topic: string, payload_el: string, event_type: string)
   return Signal:from('remove', topic, payload_el, event_type or 'removed')
 end

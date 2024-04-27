@@ -34,6 +34,16 @@ public interface {{resource.pascal_name}}Response {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}ResponseUpsert")
+    class Upsert {
+        @JsonView(Views.Default.class)
+        private {{resource.pascal_name}}Model updated;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}ResponseUpdate")
     class Remove {
         @JsonView(Views.Default.class)

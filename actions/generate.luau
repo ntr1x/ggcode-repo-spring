@@ -52,7 +52,7 @@ local service_payments = Module
     :from(project, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8083))
 
-local service_events = Module
+    local service_events = Module
     :from(project, 'service_events')
     :with_profile('local', profile_local:copy():with_port(8084))
 
@@ -277,6 +277,8 @@ local exchange_service_customers = Exchange
         Topic:from('public_customers'),
         Topic:from('verify_phone'),
         Topic:from('verify_email'),
+        Topic:from('update_phone'),
+        Topic:from('update_email'),
     }
 
 local exchange_gateway_payments = exchange_service_payments
@@ -323,6 +325,23 @@ local projection_profile = Projection
         Action:delete "isAuthenticated()";
         Action:update "isAuthenticated()";
         Action:replace "isAuthenticated()";
+    }
+
+local projection_profile_attribute = Projection
+    :from("profile")
+    :with_rules {
+        Auth:subject "customer_id";
+        Action:upsert("isAuthenticated()"):with_route(''):with_rules {
+            Projection.Override:from_context("id", "customer_id"):with_hidden();
+            Projection.Override:from_hidden("email");
+            Projection.Override:from_hidden("phone");
+        };
+        Action:find("isAuthenticated()"):with_route(''):with_rules {
+            Projection.Override:from_context("id", "customer_id"):with_hidden();
+            Projection.Override:from_hidden("email");
+            Projection.Override:from_hidden("phone");
+            Projection.Override:from_hidden("name");
+        };
     }
 
 local projection_profile_verify_phone = Projection
@@ -434,56 +453,6 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
-        :from(projection_profile_verify_phone, unit_customer_verify_phone)
-        :with_title("Customer Profile")
-        :with_rules({
-            Resource.Signal:create('verify_phone', '#result.created');
-            Resource.View:kafka({ "secret", "is_confirmed" });
-            Resource.View:update({ "secret" });
-            Resource.Request:create(unit_customer_verify_phone):with_rules {
-                Resource.Override:from_expression('secret', '@generatorService.randomInt(1000, 9999)');
-                Resource.Override:from_value('is_confirmed', 'false');
-            };
-            Resource.Request:select(unit_customer_verify_phone):with_rules {
-                Resource.Override:from_hidden('secret');
-            };
-            Resource.Request:update(unit_customer_verify_phone):with_rules {
-                Resource.Override:from_hidden('id');
-                Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_request('phone');
-                Resource.Filter:from_request('secret');
-            };
-        })
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
-        :from(projection_profile_verify_email, unit_customer_verify_email)
-        :with_title("Customer Profile")
-        :with_rules({
-            Resource.Signal:create('verify_email', '#result.created');
-            Resource.View:kafka({ "secret", "is_confirmed" });
-            Resource.View:update({ "secret" });
-            Resource.Request:create(unit_customer_verify_email):with_rules {
-                Resource.Override:from_expression('secret', "@generatorService.randomString(12)");
-                Resource.Override:from_value('is_confirmed', 'false');
-            };
-            Resource.Request:select(unit_customer_verify_email):with_rules {
-                Resource.Override:from_hidden('secret');
-            };
-            Resource.Request:update(unit_customer_verify_email):with_rules {
-                Resource.Override:from_hidden('id');
-                Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_request('email');
-                Resource.Filter:from_request('secret');
-            };
-        })
-        :unwrap()
-}
-ggcode.generate "@/resource" {
-    target = '@examples',
-    variables = Resource
         :from(projection_system, unit_order_type)
         :with_title("Dictionaries")
         :unwrap()
@@ -570,6 +539,66 @@ ggcode.generate "@/resource" {
         :with_title("Payments")
         :unwrap()
 }
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile_attribute, unit_customer)
+        :with_title("Customer Profile")
+        :with_expanded_signals('public_customer')
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile_verify_phone, unit_customer_verify_phone)
+        :with_title("Customer Profile")
+        :with_rules({
+            Resource.Signal:create('verify_phone', '#result.created');
+            Resource.Signal:update('update_email', '#result.updated');
+            Resource.View:kafka({ "secret", "is_confirmed" });
+            Resource.View:update({ "secret" });
+            Resource.Request:create(unit_customer_verify_phone):with_rules {
+                Resource.Override:from_expression('secret', '@generatorService.randomInt(1000, 9999)');
+                Resource.Override:from_value('is_confirmed', 'false');
+            };
+            Resource.Request:select(unit_customer_verify_phone):with_rules {
+                Resource.Override:from_hidden('secret');
+            };
+            Resource.Request:update(unit_customer_verify_phone):with_rules {
+                Resource.Override:from_hidden('id');
+                Resource.Filter:from_value('is_confirmed', 'false');
+                Resource.Filter:from_request('phone');
+                Resource.Filter:from_request('secret');
+            };
+        })
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile_verify_email, unit_customer_verify_email)
+        :with_title("Customer Profile")
+        :with_rules({
+            Resource.Signal:create('verify_email', '#result.created');
+            Resource.Signal:update('update_email', '#result.updated');
+            Resource.View:kafka({ "secret", "is_confirmed" });
+            Resource.View:update({ "secret" });
+            Resource.Request:create(unit_customer_verify_email):with_rules {
+                Resource.Override:from_expression('secret', "@generatorService.randomString(12)");
+                Resource.Override:from_value('is_confirmed', 'false');
+            };
+            Resource.Request:select(unit_customer_verify_email):with_rules {
+                Resource.Override:from_hidden('secret');
+            };
+            Resource.Request:update(unit_customer_verify_email):with_rules {
+                Resource.Override:from_hidden('id');
+                Resource.Filter:from_value('is_confirmed', 'false');
+                Resource.Filter:from_request('email');
+                Resource.Filter:from_request('secret');
+            };
+        })
+        :unwrap()
+}
 
 -- Publicly accessible resources
 
@@ -646,6 +675,18 @@ ggcode.generate "@/listener" {
     target = '@examples',
     variables = Listener
         :from(gateway_customers, "verify_email")
+        :unwrap()
+}
+ggcode.generate "@/listener" {
+    target = '@examples',
+    variables = Listener
+        :from(service_customers, "update_phone")
+        :unwrap()
+}
+ggcode.generate "@/listener" {
+    target = '@examples',
+    variables = Listener
+        :from(service_customers, "update_email")
         :unwrap()
 }
 ggcode.generate "@/listener" {

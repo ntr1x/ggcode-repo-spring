@@ -13,6 +13,9 @@ public class Views {
     public static class Update extends Default {
     }
 
+    public static class Upsert extends Default {
+    }
+
     public static class Remove extends Default {
     }
 

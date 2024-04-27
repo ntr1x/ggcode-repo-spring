@@ -1,5 +1,6 @@
 package {{package.name}}.request.{{projection.name}};
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,9 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestId")
     class Id {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:id";
+
         {%- for desc in entity.keys.array %}
         {# Blank line #}
         private {{desc.java_type}} {{desc.camel_name}};
@@ -24,9 +28,13 @@ public interface {{resource.pascal_name}}Request {
 
     @Data
     @Builder(toBuilder = true)
+    @NoArgsConstructor
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestContext")
     class Context {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:context";
+
         {%- if projection.context.array | length > 0 -%}
         {%- for desc in projection.context.array %}
         {# Blank line #}
@@ -43,6 +51,9 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestCreate")
     class Create {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:create";
+
         {%- for desc in requests.create.columns.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}
@@ -62,6 +73,9 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestPut")
     class Replace {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:replace";
+
         {%- for desc in requests.replace.keys.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}
@@ -90,6 +104,9 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestSelect")
     class Select {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:select";
+
         {%- for desc in requests.select.keys.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}
@@ -118,6 +135,9 @@ public interface {{resource.pascal_name}}Request {
     @AllArgsConstructor
     @Schema(name = "{{resource.pascal_name}}RequestUpdate")
     class Update {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:update";
+
         {%- for desc in requests.update.keys.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}
@@ -128,6 +148,68 @@ public interface {{resource.pascal_name}}Request {
         {%- endfor %}
 
         {%- for desc in requests.update.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.upsert %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestUpsert")
+    class Upsert {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:upsert";
+
+        {%- for desc in requests.upsert.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.upsert.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.find %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestFind")
+    class Find {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:find";
+
+        {%- for desc in requests.find.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.find.columns.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}
         {%- else %}

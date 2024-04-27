@@ -1,9 +1,11 @@
 package {{package.name}}.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.ntr1x.common.api.views.Views;
 
 @Data
 @Builder(toBuilder = true)
@@ -12,17 +14,20 @@ import lombok.NoArgsConstructor;
 public class {{unit.pascal_name}}Model {
     {%- for desc in entity.keys.array %}
     {# Blank line #}
+    @JsonView(Views.Default.class)
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 
     {%- for desc in entity.columns.array %}
     {# Blank line #}
+    @JsonView(Views.Default.class)
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 
     {%- if entity.refs | length > 0 -%}
     {%- for desc in entity.refs.array %}
     {# Blank line #}
+    @JsonView(Views.Default.class)
     private {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model {{desc.camel_name}};
     {%- endfor -%}
     {%- endif %}

@@ -33,6 +33,10 @@ function Request:update(unit: Unit)
   return Request:from('update', unit)
 end
 
+function Request:update(unit: Unit)
+  return Request:from('upsert', unit)
+end
+
 function Request:remove(unit: Unit)
   return Request:from('remove', unit)
 end
@@ -43,6 +47,10 @@ end
 
 function Request:replace(unit: Unit)
   return Request:from('replace', unit)
+end
+
+function Request:find(unit: Unit)
+  return Request:from('find', unit)
 end
 
 function Request:with_rules(children: table)
