@@ -2,6 +2,8 @@ local Meta = require('core/Meta')
 local Override = require('spring/resource/Override')
 local Role = require('spring/security/action/Role')
 local Filter = require('spring/resource/Filter')
+local Fetch = require('spring/resource/Fetch')
+local Validate = require('spring/resource/Validate')
 
 local Action = {
   __type = 'Action',
@@ -9,12 +11,16 @@ local Action = {
   Override = Override,
   Role = Role,
   Filter = Filter,
+  Fetch = Fetch,
+  Validate = Validate,
 
   method = nil,
   role = nil,
   route = nil,
   overrides = nil,
   filters = nil,
+  fetches = nil,
+  validations = nil,
 }
 
 function Action:new(o)
@@ -30,6 +36,8 @@ function Action:from(method: string, role: string)
     role = role,
     overrides = Meta:array {},
     filters = Meta:array {},
+    fetches = Meta:array {},
+    validations = Meta:array {},
   })
 end
 
@@ -85,6 +93,10 @@ function Action:with_rules(children: table)
       self.overrides[#self.overrides + 1] = child
     elseif child.__type == 'Filter' then
       self.filters[#self.filters + 1] = child
+    elseif child.__type == 'Fetch' then
+      self.fetches[#self.fetches + 1] = child
+    elseif child.__type == 'Validate' then
+      self.validations[#self.validations + 1] = child
     end
   end
 

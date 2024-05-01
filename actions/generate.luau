@@ -52,7 +52,7 @@ local service_payments = Module
     :from(project, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8083))
 
-    local service_events = Module
+local service_events = Module
     :from(project, 'service_events')
     :with_profile('local', profile_local:copy():with_port(8084))
 
@@ -90,6 +90,15 @@ local unit_customer = Unit
         Prop:text 'email',
         Prop:text 'phone',
         Prop:text 'name',
+    }
+
+local unit_agent = Unit
+    :from(service_customers, "public.agent")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:uuid 'customer_id',
+        Prop:boolean 'is_confirmed',
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
     }
 
 local unit_customer_verify_phone = Unit
@@ -147,15 +156,25 @@ local unit_basket_product_ref = Unit
         Prop:decimal 'price',
     }
 
+local unit_basket = Unit
+    :from(service_basket, "public.basket")
+    :with_columns {
+        PK:uuid 'id',
+        Prop:uuid 'customer_id',
+        Prop:uuid 'agent_id',
+        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
+        Ref:new { name = 'agent', column = 'agent_id', unit = unit_basket_customer_ref },
+    }
+
 local unit_basket_entry = Unit
     :from(service_basket, "public.basket_entry")
     :with_columns {
         PK:uuid 'id',
-        Prop:uuid 'customer_id',
+        Prop:uuid 'basket_id',
         Prop:uuid 'product_id',
         Prop:int 'quantity',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
         Ref:new { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
+        Ref:new { name = 'basket', column = 'basket_id', unit = unit_basket },
     }
 
 local unit_favorite = Unit
@@ -314,7 +333,7 @@ local projection_profile = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
-        Projection.Filter:from_context "customer_id";
+        Projection.Filter:from_path('customer_id', 'context.customer_id');
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -326,6 +345,40 @@ local projection_profile = Projection
         Action:update "isAuthenticated()";
         Action:replace "isAuthenticated()";
     }
+
+local projection_profile_basket = Projection
+    :from("profile")
+    :with_rules {
+        Auth:subject "customer_id";
+        -- Projection.Filter:from_path('customer_id', "context.customer_id");
+        Projection.Filter:from_path('basket_id', "basket.id");
+        Projection.Override:from_context "customer_id";
+        Action:get("isAuthenticated()"):with_rules {
+            Action.Validate:equals('entity.basket.customer_id', 'context.customer_id'),
+        };
+        Action:select("isAuthenticated()"):with_rules {
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Validate:equals('basket.customer_id', 'context.customer_id'),
+        };
+        Action:create("isAuthenticated()"):with_rules {
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Validate:equals('basket.customer_id', 'context.customer_id'),
+            Action.Override:from_value("id", "generatorService.randomUUID()");
+        };
+        Action:remove("isAuthenticated()"):with_rules {
+            Action.Validate:equals('entity.basket.customer_id', 'context.customer_id'),
+        };
+        Action:delete "isAuthenticated()";
+        Action:update("isAuthenticated()"):with_rules {
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Validate:equals('basket.customer_id', 'context.customer_id'),
+        },
+        Action:replace("isAuthenticated()"):with_rules {
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Validate:equals('basket.customer_id', 'context.customer_id'),
+        };
+    }
+
 
 local projection_profile_attribute = Projection
     :from("profile")
@@ -348,7 +401,7 @@ local projection_profile_verify_phone = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
-        Projection.Filter:from_context "customer_id";
+        Projection.Filter:from_path("customer_id", "context.customer_id");
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -363,7 +416,7 @@ local projection_profile_verify_email = Projection
     :from("profile")
     :with_rules {
         Auth:subject "customer_id";
-        Projection.Filter:from_context "customer_id";
+        Projection.Filter:from_path("customer_id", "context.customer_id");
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -379,7 +432,7 @@ local projection_profile_payment = Projection
     :with_rules {
         -- User can see but cannot update his payments directly
         Auth:subject "customer_id";
-        Projection.Filter:from_context "customer_id";
+        Projection.Filter:from_path("customer_id", "context.customer_id");
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -390,7 +443,7 @@ local projection_profile_order = Projection
     :with_rules {
         -- User can submit an order and see order history
         Auth:subject "customer_id";
-        Projection.Filter:from_context "customer_id";
+        Projection.Filter:from_path("customer_id", "context.customer_id");
         Projection.Override:from_context "customer_id";
         Action:get "isAuthenticated()";
         Action:select "isAuthenticated()";
@@ -423,8 +476,10 @@ ggcode.generate "@/exchange" { target = '@examples', variables = exchange_servic
 ggcode.generate "@/unit" { target = '@examples', variables = unit_category:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_product:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_customer:unwrap() }
+ggcode.generate "@/unit" { target = '@examples', variables = unit_agent:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_customer_verify_email:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_customer_verify_phone:unwrap() }
+ggcode.generate "@/unit" { target = '@examples', variables = unit_basket:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_basket_entry:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_favorite:unwrap() }
 ggcode.generate "@/unit" { target = '@examples', variables = unit_basket_customer_ref:unwrap() }
@@ -448,6 +503,14 @@ ggcode.generate "@/resource" {
         :from(projection_system, unit_customer)
         :with_title("Customers")
         :with_expanded_signals('public_customer')
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_system, unit_agent)
+        :with_title("Agents")
+        :with_expanded_signals('public_agent')
         :unwrap()
 }
 ggcode.generate "@/resource" {
@@ -514,7 +577,14 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@examples',
     variables = Resource
-        :from(projection_profile, unit_basket_entry)
+        :from(projection_profile, unit_basket)
+        :with_title("Basket")
+        :unwrap()
+}
+ggcode.generate "@/resource" {
+    target = '@examples',
+    variables = Resource
+        :from(projection_profile_basket, unit_basket_entry)
         :with_title("Basket")
         :unwrap()
 }
@@ -567,8 +637,8 @@ ggcode.generate "@/resource" {
             Resource.Request:update(unit_customer_verify_phone):with_rules {
                 Resource.Override:from_hidden('id');
                 Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_request('phone');
-                Resource.Filter:from_request('secret');
+                Resource.Filter:from_path('phone', 'request.phone');
+                Resource.Filter:from_path('secret', 'request.secret');
             };
         })
         :unwrap()
@@ -593,8 +663,8 @@ ggcode.generate "@/resource" {
             Resource.Request:update(unit_customer_verify_email):with_rules {
                 Resource.Override:from_hidden('id');
                 Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_request('email');
-                Resource.Filter:from_request('secret');
+                Resource.Filter:from_path('email', 'request.email');
+                Resource.Filter:from_path('secret', 'request.secret');
             };
         })
         :unwrap()
