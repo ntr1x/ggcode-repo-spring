@@ -6,6 +6,7 @@ local View = require('spring/resource/View')
 local Request = require('spring/resource/Request')
 local Override = require('spring/resource/Override')
 local Filter = require('spring/resource/Filter')
+local Fetch = require('spring/resource/Fetch')
 
 local Resource = {
   __type = 'Resource',
@@ -15,6 +16,7 @@ local Resource = {
   Request = Request,
   Override = Override,
   Filter = Filter,
+  Fetch = Fetch,
 
   title = nil,
   description = nil,
@@ -25,6 +27,8 @@ local Resource = {
   requests = nil,
   overrides = nil,
   filters = nil,
+  fetches = nil,
+  validations = nil,
 }
 
 function Resource:new(o)
@@ -43,6 +47,8 @@ function Resource:from(projection: Projection, unit: Unit)
     requests = Meta:array {},
     overrides = Meta:array {},
     filters = Meta:array {},
+    fetches = Meta:array {},
+    validations = Meta:array {},
   })
 end
 
@@ -70,6 +76,10 @@ function Resource:with_rules(children: table)
       self.overrides[#self.overrides + 1] = child
     elseif child.__type == 'Filter' then
       self.filters[#self.filters + 1] = child
+    elseif child.__type == 'Fetch' then
+      self.fetches[#self.fetches + 1] = child
+    elseif child.__type == 'Validation' then
+      self.validations[#self.validations + 1] = child
     end
   end
 
@@ -139,7 +149,7 @@ function Resource:unwrap_requests()
     by_name[request.name] = request:unwrap(self)
   end
 
-  for i, request_name in { 'create', 'replace', 'update', 'upsert', 'select', 'get', 'delete', 'find' } do
+  for i, request_name in { 'create', 'replace', 'update', 'upsert', 'select', 'get', 'remove', 'find' } do
     if not by_name[request_name] then
       local request = Request:from(request_name, self.unit)
       by_name[request_name] = request:unwrap(self)

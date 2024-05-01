@@ -1,18 +1,22 @@
 local Meta = require('core/Meta')
 local Override = require('spring/resource/Override')
 local Filter = require('spring/resource/Filter')
+local Validate = require('spring/resource/Validate')
 
 local Projection = {
   __type = 'Projection',
 
   Override = Override,
   Filter = Filter,
+  Validate = Validate,
 
   name = nil,
   actions = nil,
   context = nil,
   overrides = nil,
   filters = nil,
+  fetches = nil,
+  validations = nil,
 }
 
 function Projection:new(o)
@@ -30,6 +34,8 @@ function Projection:from(name: string, children: table)
       context = Meta:array {},
       overrides = Meta:array {},
       filters = Meta:array {},
+      fetches = Meta:array {},
+      validations = Meta:array {},
     })
     :with_rules(children)
 end
@@ -46,6 +52,10 @@ function Projection:with_rules(children: table)
       self.overrides[#self.overrides + 1] = child
     elseif child.__type == 'Filter' then
       self.filters[#self.filters + 1] = child
+    elseif child.__type == 'Fetch' then
+      self.fetches[#self.fetches + 1] = child
+    elseif child.__type == 'Validation' then
+      self.validations[#self.validations + 1] = child
     end
   end
 

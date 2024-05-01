@@ -7,6 +7,8 @@ local Request = {
   unit = nil,
   filters = Meta:array {},
   overrides = Meta:array {},
+  fetches = Meta:array {},
+  validations = Meta:array {},
 }
 
 function Request:new(o)
@@ -22,6 +24,8 @@ function Request:from(name: string, unit: Unit)
     unit = unit,
     filters = Meta:array {},
     overrides = Meta:array {},
+    fetches = Meta:array {},
+    validations = Meta:array {},
   })
 end
 
@@ -61,6 +65,10 @@ function Request:with_rules(children: table)
       self.filters[#self.filters + 1] = child
     elseif child.__type == 'Override' then
       self.overrides[#self.overrides + 1] = child
+    elseif child.__type == 'Fetch' then
+      self.fetches[#self.fetches + 1] = child
+    elseif child.__type == 'Validate' then
+      self.validations[#self.validations + 1] = child
     end
   end
 
@@ -135,6 +143,66 @@ function Request:unwrap_filters(parent_resource: table)
   return filters
 end
 
+function Request:unwrap_fetches(parent_resource: table)
+  local fetches = Meta:array {}
+
+  for _, item in parent_resource.projection.fetches do
+    local unwrapped = item:unwrap()
+    fetches[#fetches + 1] = unwrapped
+  end
+
+  for _, action in parent_resource.projection.actions do
+    if action.method == self.name then
+      for _, item in action.fetches do
+        local unwrapped = item:unwrap()
+        fetches[#fetches + 1] = unwrapped
+      end
+    end
+  end
+
+  for _, item in parent_resource.fetches do
+    local unwrapped = item:unwrap()
+    fetches[#fetches + 1] = unwrapped
+  end
+
+  for _, item in self.fetches do
+    local unwrapped = item:unwrap()
+    fetches[#fetches + 1] = unwrapped
+  end
+
+  return fetches
+end
+
+function Request:unwrap_validations(parent_resource: table)
+  local validations = Meta:array {}
+
+  for _, item in parent_resource.projection.validations do
+    local unwrapped = item:unwrap()
+    validations[#validations + 1] = unwrapped
+  end
+
+  for _, action in parent_resource.projection.actions do
+    if action.method == self.name then
+      for _, item in action.validations do
+        local unwrapped = item:unwrap()
+        validations[#validations + 1] = unwrapped
+      end
+    end
+  end
+
+  for _, item in parent_resource.validations do
+    local unwrapped = item:unwrap()
+    validations[#validations + 1] = unwrapped
+  end
+
+  for _, item in self.validations do
+    local unwrapped = item:unwrap()
+    validations[#validations + 1] = unwrapped
+  end
+
+  return validations
+end
+
 function unwrap_children(children: table, overrides: table)
   local by_name = Meta:table {}
   local array = Meta:array {}
@@ -171,6 +239,8 @@ end
 function Request:unwrap(parent_resource: table)
   local overrides = self:unwrap_overrides(parent_resource)
   local filters = self:unwrap_filters(parent_resource)
+  local fetches = self:unwrap_fetches(parent_resource)
+  local validations = self:unwrap_validations(parent_resource)
 
   return {
     name = self.name,
@@ -179,6 +249,8 @@ function Request:unwrap(parent_resource: table)
     refs = self:unwrap_refs(overrides),
     overrides = overrides,
     filters = filters,
+    fetches = fetches,
+    validations = validations,
   }
 end
 

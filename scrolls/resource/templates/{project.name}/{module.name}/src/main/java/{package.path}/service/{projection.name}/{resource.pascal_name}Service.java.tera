@@ -7,12 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.ntr1x.common.api.annotation.Event;
 import org.ntr1x.common.api.service.EvaluatorService;
 import org.ntr1x.common.api.service.GeneratorService;
+import org.ntr1x.common.web.util.Validate;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
-import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import {{package.name}}.entity.*;
 import {{package.name}}.repository.{{unit.pascal_name}}Repository;
 import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
 import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
@@ -43,6 +44,41 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Create request
     ) {
+        {%- if requests.create.fetches | length %}
+        {% for fetch in requests.create.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('optional_id_flag') and fetch.optional_id_flag %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.create.validations | length %}
+        {% for validation in requests.create.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = {{unit.pascal_name}}Entity.builder();
         {# Blank line -#}
         {% for desc in requests.create.keys.array %}
@@ -102,6 +138,34 @@ public class {{resource.pascal_name}}Service {
                 .findById(key.getId())
                 .orElseThrow();
 
+        {%- if requests.remove.fetches | length %}
+        {% for fetch in requests.remove.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.remove.validations | length %}
+        {% for validation in requests.remove.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
 
         {{unit.camel_name}}Repository.delete(entity);
@@ -123,6 +187,34 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Update request
     ) {
+        {%- if requests.update.fetches | length %}
+        {% for fetch in requests.update.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.update.validations | length %}
+        {% for validation in requests.update.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
                 .builder()
                 {%- for desc in requests.update.keys.array %}
@@ -143,10 +235,8 @@ public class {{resource.pascal_name}}Service {
                 .{{f.camel_name}}({{f.value}})
                 {%- elif f is containing('expression') %}
                 .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
-                {%- elif f is containing('context_value') %}
-                .{{f.camel_name}}(context.get{{f.context_value.pascal_name}}())
-                {%- elif f is containing('request_value') %}
-                .{{f.camel_name}}(request.get{{f.request_value.pascal_name}}().orElseThrow())
+                {%- elif f is containing('path') %}
+                .{{f.camel_name}}({% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
                 {%- else %}
                 {#- Ignore -#}
                 {%- endif -%}
@@ -190,7 +280,7 @@ public class {{resource.pascal_name}}Service {
     {%- if projection.actions.by_method.upsert %}
     {# Blank Line #}
     @Transactional
-    {%- for signal in signals.update | default(value = []) %}
+    {%- for signal in signals.upsert | default(value = []) %}
     @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
     {%- endfor %}
     public {{resource.pascal_name}}Response.Upsert upsert(
@@ -217,10 +307,8 @@ public class {{resource.pascal_name}}Service {
                 .{{f.camel_name}}({{f.value}})
                 {%- elif f is containing('expression') %}
                 .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
-                {%- elif f is containing('context_value') %}
-                .{{f.camel_name}}(context.get{{f.context_value.pascal_name}}())
-                {%- elif f is containing('request_value') %}
-                .{{f.camel_name}}(request.get{{f.request_value.pascal_name}}().orElseThrow())
+                {%- elif f is containing('path') %}
+                .{{f.camel_name}}({% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
                 {%- else %}
                 {#- Ignore -#}
                 {%- endif -%}
@@ -230,6 +318,34 @@ public class {{resource.pascal_name}}Service {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findOne(Example.of(example))
                 .orElse(example);
+
+        {%- if requests.upsert.fetches | length %}
+        {% for fetch in requests.upsert.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.upsert.validations | length %}
+        {% for validation in requests.upsert.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
 
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line -#}
@@ -272,6 +388,34 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Id key,
         {{resource.pascal_name}}Request.Replace request
     ) {
+        {%- if requests.replace.fetches | length %}
+        {% for fetch in requests.replace.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.replace.validations | length %}
+        {% for validation in requests.replace.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
                 .builder()
                 {%- for desc in requests.replace.keys.array %}
@@ -292,10 +436,8 @@ public class {{resource.pascal_name}}Service {
                 .{{f.camel_name}}({{f.value}})
                 {%- elif f is containing('expression') %}
                 .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
-                {%- elif f is containing('context_value') %}
-                .{{f.camel_name}}(context.get{{f.context_value.pascal_name}}())
-                {%- elif f is containing('request_value') %}
-                .{{f.camel_name}}(request.get{{f.request_value.pascal_name}}().orElseThrow())
+                {%- elif f is containing('path') %}
+                .{{f.camel_name}}({% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
                 {%- else %}
                 {#- Ignore -#}
                 {%- endif -%}
@@ -345,6 +487,34 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Select request,
         Pageable pageable
     ) {
+        {%- if requests.select.fetches | length %}
+        {% for fetch in requests.select.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.select.validations | length %}
+        {% for validation in requests.select.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         ExampleMatcher matcher = ExampleMatcher.matchingAll();
 
         {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
@@ -417,6 +587,35 @@ public class {{resource.pascal_name}}Service {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findById(key.getId())
                 .orElseThrow();
+
+        {%- if requests.get.fetches | length %}
+        {% for fetch in requests.get.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.get.validations | length %}
+        {% for validation in requests.get.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
         {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
         return result;
     }
@@ -429,6 +628,17 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Context context,
         {{resource.pascal_name}}Request.Find request
     ) {
+        {%- for fetch in requests.find.fetches %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                {%- if fetch is containing('expression') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+                {%- elif fetch is containing('value') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+                {%- elif fetch is containing('path') %}
+                .find({{fetch.unit.pascal_name}}Entity.class, {% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %});
+                {%- endif %}
+        {% endfor %}
+        {# Blank line -#}
         ExampleMatcher matcher = ExampleMatcher.matchingAll();
 
         {{unit.pascal_name}}Entity template = new {{unit.pascal_name}}Entity();
