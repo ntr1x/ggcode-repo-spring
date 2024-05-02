@@ -10,7 +10,7 @@ local Fetch = {
   value = nil,
   path = nil,
   expression = nil,
-  optional_id_flag = nil,
+  is_optional = nil,
 }
 
 function Fetch:new(o)
@@ -28,6 +28,7 @@ function Fetch:from(unit: Unit, name: string, options: table)
     value = options.value,
     expression = options.expression,
     path = options.path,
+    is_optional = options.is_optional,
   })
 end
 
@@ -49,8 +50,12 @@ function Fetch:by_path(unit: Unit, name: string, path: string)
   })
 end
 
-function Fetch:with_optional_id_flag(optional_id_flag: boolean)
-  self.optional_id_flag = optional_id_flag
+function Fetch:with_is_optional(is_optional: boolean)
+  if is_optional == nil then
+    is_optional = true
+  end
+
+  self.is_optional = is_optional
   return self
 end
 
@@ -85,7 +90,7 @@ function Fetch:unwrap()
     value = self.value,
     expression = self.expression,
     path = self:unwrap_path(self.path),
-    optional_id_flag = self.optional_id_flag,
+    is_optional = self.is_optional,
   }
 end
 

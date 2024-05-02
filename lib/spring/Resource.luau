@@ -7,6 +7,7 @@ local Request = require('spring/resource/Request')
 local Override = require('spring/resource/Override')
 local Filter = require('spring/resource/Filter')
 local Fetch = require('spring/resource/Fetch')
+local Validate = require('spring/resource/Validate')
 
 local Resource = {
   __type = 'Resource',
@@ -17,6 +18,7 @@ local Resource = {
   Override = Override,
   Filter = Filter,
   Fetch = Fetch,
+  Validate = Validate,
 
   title = nil,
   description = nil,

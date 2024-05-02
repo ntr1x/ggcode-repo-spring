@@ -26,9 +26,11 @@ public class {{unit.pascal_name}}Model {
 
     {%- if entity.refs | length > 0 -%}
     {%- for desc in entity.refs.array %}
+    {%- if desc.variant == 'one' %}
     {# Blank line #}
     @JsonView(Views.Default.class)
     private {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model {{desc.camel_name}};
+    {%- endif -%}
     {%- endfor -%}
     {%- endif %}
 }

@@ -80,48 +80,61 @@ local unit_product = Unit
         Prop:text 'description',
         Prop:decimal 'price',
         Prop:uuid 'category_id',
-        Ref:new { name = 'category', column = 'category_id', unit = unit_category, },
+        Ref:one { name = 'category', column = 'category_id', unit = unit_category },
     }
 
-local unit_customer = Unit
-    :from(service_customers, "public.customer")
-    :with_columns {
-        PK:uuid 'id',
-        Prop:text 'email',
-        Prop:text 'phone',
-        Prop:text 'name',
-    }
+local unit_customer = Unit:from(service_customers, "public.customer")
+local unit_customer_verify_phone = Unit:from(service_customers, "public.customer_verify_phone")
+local unit_customer_verify_email = Unit:from(service_customers, "public.customer_verify_email")
 
-local unit_agent = Unit
-    :from(service_customers, "public.agent")
-    :with_columns {
-        PK:uuid 'id',
-        Prop:uuid 'customer_id',
-        Prop:boolean 'is_confirmed',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
-    }
+local unit_agent = Unit:from(service_customers, "public.agent")
 
-local unit_customer_verify_phone = Unit
-    :from(service_customers, "public.customer_verify_phone")
-    :with_columns {
-        PK:uuid 'id',
-        Prop:uuid 'customer_id',
-        Prop:text 'phone',
-        Prop:int 'secret',
-        Prop:boolean 'is_confirmed',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
-    }
+unit_customer:with_columns {
+    PK:uuid 'id',
+    Prop:text 'email',
+    Prop:text 'phone',
+    Prop:text 'name',
+    Prop:text 'surname',
+    Prop:text 'patronymic',
+    Ref:many { name = 'agents', column = 'customer_id', unit = unit_agent },
+    Ref:many { name = 'phones', column = 'customer_id', unit = unit_customer_verify_phone },
+    Ref:many { name = 'emails', column = 'customer_id', unit = unit_customer_verify_email },
+}
 
-local unit_customer_verify_email = Unit
-    :from(service_customers, "public.customer_verify_email")
-    :with_columns {
-        PK:uuid 'id',
-        Prop:uuid 'customer_id',
-        Prop:text 'email',
-        Prop:text 'secret',
-        Prop:boolean 'is_confirmed',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_customer },
-    }
+unit_agent:with_columns {
+    PK:uuid 'id',
+    Prop:uuid 'customer_id',
+    Prop:text 'kind',
+    Prop:text 'title',
+    Prop:text 'inn',
+    Prop:text 'kpp',
+    Prop:text 'bic',
+    Prop:text 'bank',
+    Prop:text 'okved',
+    Prop:text 'address',
+    Prop:text 'phone',
+    Prop:text 'email',
+    Prop:text 'registration_address',
+    Ref:one { name = 'customer', column = 'customer_id', unit = unit_customer },
+}
+
+unit_customer_verify_phone:with_columns {
+    PK:uuid 'id',
+    Prop:uuid 'customer_id',
+    Prop:text 'phone',
+    Prop:int 'secret',
+    Prop:boolean 'is_confirmed',
+    Ref:one { name = 'customer', column = 'customer_id', unit = unit_customer },
+}
+
+unit_customer_verify_email:with_columns {
+    PK:uuid 'id',
+    Prop:uuid 'customer_id',
+    Prop:text 'email',
+    Prop:text 'secret',
+    Prop:boolean 'is_confirmed',
+    Ref:one { name = 'customer', column = 'customer_id', unit = unit_customer },
+}
 
 local unit_event = Unit
     :from(service_events, "public.event")
@@ -146,6 +159,8 @@ local unit_basket_customer_ref = Unit
         Prop:text 'email',
         Prop:text 'phone',
         Prop:text 'name',
+        Prop:text 'surname',
+        Prop:text 'patronymic',
     }
 
 local unit_basket_product_ref = Unit
@@ -162,8 +177,8 @@ local unit_basket = Unit
         PK:uuid 'id',
         Prop:uuid 'customer_id',
         Prop:uuid 'agent_id',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
-        Ref:new { name = 'agent', column = 'agent_id', unit = unit_basket_customer_ref },
+        Ref:one { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
+        Ref:one { name = 'agent', column = 'agent_id', unit = unit_basket_customer_ref },
     }
 
 local unit_basket_entry = Unit
@@ -173,8 +188,8 @@ local unit_basket_entry = Unit
         Prop:uuid 'basket_id',
         Prop:uuid 'product_id',
         Prop:int 'quantity',
-        Ref:new { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
-        Ref:new { name = 'basket', column = 'basket_id', unit = unit_basket },
+        Ref:one { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
+        Ref:one { name = 'basket', column = 'basket_id', unit = unit_basket },
     }
 
 local unit_favorite = Unit
@@ -183,8 +198,8 @@ local unit_favorite = Unit
         PK:uuid 'id',
         Prop:uuid 'customer_id',
         Prop:uuid 'product_id',
-        Ref:new { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
-        Ref:new { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
+        Ref:one { name = 'customer', column = 'customer_id', unit = unit_basket_customer_ref },
+        Ref:one { name = 'product', column = 'product_id', unit = unit_basket_product_ref },
     }
 
 local unit_order = Unit:from(service_payments, "public.order")
@@ -204,9 +219,9 @@ unit_order:with_columns {
     Prop:int 'order_status_id',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
-    Ref:new { name = 'customer', column = 'customer_id', unit = unit_payment_customer_ref },
-    Ref:new { name = 'order_type', column = 'order_type_id', unit = unit_order_type },
-    Ref:new { name = 'order_status', column = 'order_status_id', unit = unit_order_status },
+    Ref:one { name = 'customer', column = 'customer_id', unit = unit_payment_customer_ref },
+    Ref:one { name = 'order_type', column = 'order_type_id', unit = unit_order_type },
+    Ref:one { name = 'order_status', column = 'order_status_id', unit = unit_order_status },
 }
 
 unit_order_type:with_columns {
@@ -220,8 +235,8 @@ unit_order_entry:with_columns {
     Prop:uuid 'product_id',
     Prop:uuid 'order_id',
     Prop:int 'quantity',
-    Ref:new { name = 'order', column = 'order_id', unit = unit_order },
-    Ref:new { name = 'product', column = 'product_id', unit = unit_payment_product_ref },
+    Ref:one { name = 'order', column = 'order_id', unit = unit_order },
+    Ref:one { name = 'product', column = 'product_id', unit = unit_payment_product_ref },
 }
 
 unit_order_status:with_columns {
@@ -239,8 +254,8 @@ unit_payment:with_columns {
     Prop:decimal 'value',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
-    Ref:new { name = 'payment_status', column = 'payment_status_id', unit = unit_payment_status },
-    Ref:new { name = 'payment_type', column = 'payment_type_id', unit = unit_payment_type },
+    Ref:one { name = 'payment_status', column = 'payment_status_id', unit = unit_payment_status },
+    Ref:one { name = 'payment_type', column = 'payment_type_id', unit = unit_payment_type },
 }
 
 unit_payment_type:with_columns {
@@ -260,6 +275,8 @@ unit_payment_customer_ref:with_columns {
     Prop:text 'email',
     Prop:text 'phone',
     Prop:text 'name',
+    Prop:text 'surname',
+    Prop:text 'patronymic',
 }
 
 unit_payment_product_ref:with_columns {
@@ -343,7 +360,9 @@ local projection_profile = Projection
         Action:remove "isAuthenticated()";
         Action:delete "isAuthenticated()";
         Action:update "isAuthenticated()";
-        Action:replace "isAuthenticated()";
+        Action:replace("isAuthenticated()"):with_rules {
+            Action.Validate:equals('entity.customer_id', 'context.customer_id'),
+        };
     }
 
 local projection_profile_basket = Projection
@@ -357,11 +376,11 @@ local projection_profile_basket = Projection
             Action.Validate:equals('entity.basket.customer_id', 'context.customer_id'),
         };
         Action:select("isAuthenticated()"):with_rules {
-            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_is_optional(),
             Action.Validate:equals('basket.customer_id', 'context.customer_id'),
         };
         Action:create("isAuthenticated()"):with_rules {
-            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_is_optional(),
             Action.Validate:equals('basket.customer_id', 'context.customer_id'),
             Action.Override:from_value("id", "generatorService.randomUUID()");
         };
@@ -370,11 +389,11 @@ local projection_profile_basket = Projection
         };
         Action:delete "isAuthenticated()";
         Action:update("isAuthenticated()"):with_rules {
-            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_is_optional(),
             Action.Validate:equals('basket.customer_id', 'context.customer_id'),
         },
         Action:replace("isAuthenticated()"):with_rules {
-            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_optional_id_flag(true),
+            Action.Fetch:by_path(unit_basket, 'basket', 'request.basket_id'):with_is_optional(),
             Action.Validate:equals('basket.customer_id', 'context.customer_id'),
         };
     }
@@ -394,6 +413,8 @@ local projection_profile_attribute = Projection
             Projection.Override:from_hidden("email");
             Projection.Override:from_hidden("phone");
             Projection.Override:from_hidden("name");
+            Projection.Override:from_hidden("surname");
+            Projection.Override:from_hidden("patronymic");
         };
     }
 
@@ -635,10 +656,12 @@ ggcode.generate "@/resource" {
                 Resource.Override:from_hidden('secret');
             };
             Resource.Request:update(unit_customer_verify_phone):with_rules {
-                Resource.Override:from_hidden('id');
+                Resource.Validate:not_null('request.id'):with_message("Property 'id' is required'"),
+                Resource.Validate:not_null('request.secret'):with_message("Property 'secret' is required'"),
+                Resource.Override:from_hidden('phone'),
+                Resource.Override:from_value('is_confirmed', 'true'):with_hidden();
                 Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_path('phone', 'request.phone');
-                Resource.Filter:from_path('secret', 'request.secret');
+                Resource.Filter:from_path('secret', 'request.secret'):with_is_optional();
             };
         })
         :unwrap()
@@ -661,10 +684,12 @@ ggcode.generate "@/resource" {
                 Resource.Override:from_hidden('secret');
             };
             Resource.Request:update(unit_customer_verify_email):with_rules {
-                Resource.Override:from_hidden('id');
+                Resource.Validate:not_null('request.id'):with_message("Property 'id' is required'"),
+                Resource.Validate:not_null('request.secret'):with_message("Property 'secret' is required'"),
+                Resource.Override:from_hidden('email'),
+                Resource.Override:from_value('is_confirmed', 'true'):with_hidden();
                 Resource.Filter:from_value('is_confirmed', 'false');
-                Resource.Filter:from_path('email', 'request.email');
-                Resource.Filter:from_path('secret', 'request.secret');
+                Resource.Filter:from_path('secret', 'request.secret'):with_is_optional();
             };
         })
         :unwrap()
