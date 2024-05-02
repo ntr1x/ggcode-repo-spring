@@ -63,9 +63,15 @@ function Validate:equals(a_path: string, b_path: string)
   }
 end
 
-function Validate:is_true(message: string, a_path: string)
+function Validate:not_null(path: string)
+  return Validate:from('notNull'):with_rules {
+    Arg:from_path(path),
+  }
+end
+
+function Validate:is_true(path: string)
   return Validate:from('isTrue'):with_rules {
-    Arg:from_path(b_path),
+    Arg:from_path(path),
   }
 end
 

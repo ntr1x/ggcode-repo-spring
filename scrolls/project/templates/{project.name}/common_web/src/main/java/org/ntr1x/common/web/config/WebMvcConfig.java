@@ -2,19 +2,22 @@ package org.ntr1x.common.web.config;
 
 import org.ntr1x.common.api.component.AppConverter;
 import org.ntr1x.common.web.component.AppArgumentResolver;
+import org.ntr1x.common.web.component.AppExceptionHandler;
+import org.ntr1x.common.web.serializer.JsonPageSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
-@EnableWebMvc
+@Import(AppExceptionHandler.class)
 public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired(required = false)
     private List<AppConverter<?, ?>> converters;
@@ -23,8 +26,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private List<AppArgumentResolver> argumentResolvers;
 
     @Bean
-    public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
-        return new Jackson2ObjectMapperBuilder().defaultViewInclusion(true);
+    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
+        return builder -> builder
+                .defaultViewInclusion(true)
+                .failOnUnknownProperties(false)
+                .serializerByType(Page.class, new JsonPageSerializer());
     }
 
     @Override

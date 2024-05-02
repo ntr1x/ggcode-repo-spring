@@ -27,6 +27,12 @@ public class Validate {
         }
     }
 
+    public void notNull(Object a) {
+        if (a == null) {
+            throw new ResponseStatusException(status, message);
+        }
+    }
+
     public void isTrue(boolean expression) {
         if (!expression) {
             throw new ResponseStatusException(status, message);

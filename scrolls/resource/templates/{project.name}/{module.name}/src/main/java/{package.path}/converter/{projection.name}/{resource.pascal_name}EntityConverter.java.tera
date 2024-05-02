@@ -32,9 +32,11 @@ public interface {{resource.pascal_name}}EntityConverter {
                     {%- endfor %}
                     {%- if entity.refs | length > 0 -%}
                     {%- for desc in entity.refs.array %}
+                    {%- if desc.variant == 'one' %}
                     .{{desc.camel_name}}(conversionService.convert(
                             source.get{{desc.pascal_name}}(),
                             {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model.class))
+                    {%- endif -%}
                     {%- endfor -%}
                     {%- endif %}
                     .build();

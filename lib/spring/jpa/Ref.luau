@@ -6,6 +6,7 @@ local case = require('core/util/string/case')
 
 local Ref = {
   __type = 'Ref',
+  variant = nil,
   name = nil,
   unit = nil,
   column = nil,
@@ -18,11 +19,21 @@ function Ref:new(o)
   return o
 end
 
-function Ref:from(name: string, unit: Unit, column: string)
+function Ref:one(options: table)
   return Ref:new({
-    name = name,
-    unit = unit,
-    column = column,
+    variant = 'one',
+    name = options.name,
+    unit = options.unit,
+    column = options.column,
+  })
+end
+
+function Ref:many(options: table)
+  return Ref:new({
+    variant = 'many',
+    name = options.name,
+    unit = options.unit,
+    column = options.column,
   })
 end
 
@@ -40,6 +51,7 @@ function Ref:unwrap()
       kebab_name = case.snakeToKebab(self.unit.name),
       pascal_name = case.snakeToPascal(self.unit.name),
     },
+    variant = self.variant,
     column = self.column,
     name = self.name,
     camel_name = case.snakeToCamel(self.name),

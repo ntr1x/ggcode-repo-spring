@@ -6,10 +6,9 @@ local Filter = {
   __type = 'Filter',
   name = nil,
   value = nil,
-  -- request_value = nil,
-  -- context_value = nil,
   expression = nil,
   path = nil,
+  is_optional = nil,
 }
 
 function Filter:new(o)
@@ -25,59 +24,48 @@ function Filter:from(name: string, options: table)
     name = name,
     value = options.value,
     expression = options.expression,
-    -- context_value = options.context_value,
-    -- request_value = options.request_value,
     path = options.path,
+    is_optional = options.is_optional,
   })
 end
 
 -- function Filter:from_context(name: string, context_value: string)
 --   return Filter:from(name, {
---     is_hidden = true,
 --     context_value = context_value or name
 --   })
 -- end
 
 -- function Filter:from_request(name: string, request_value: string)
 --   return Filter:from(name, {
---     is_hidden = true,
 --     request_value = request_value or name
 --   })
 -- end
 
 function Filter:from_value(name: string, value: string)
   return Filter:from(name, {
-    is_hidden = true,
     value = value
   })
 end
 
 function Filter:from_expression(name: string, expression: string)
   return Filter:from(name, {
-    is_hidden = true,
     expression = expression
   })
 end
 
 function Filter:from_path(name: string, path: string)
   return Filter:from(name, {
-    is_hidden = true,
     path = path
   })
 end
 
-function Filter:do_unwrap_object_value(name: string)
-  if name == nil then
-    return nil
+function Filter:with_is_optional(is_optional: boolean)
+  if is_optional == nil then
+    is_optional = true
   end
 
-  return {
-    name = name,
-    snake_name = name,
-    camel_name = case.snakeToCamel(name),
-    pascal_name = case.snakeToPascal(name),
-    kebab_name = case.snakeToKebab(name),
-  }
+  self.is_optional = is_optional
+  return self
 end
 
 function Filter:unwrap_path()
@@ -108,9 +96,8 @@ function Filter:unwrap()
     kebab_name = case.snakeToKebab(self.name),
     value = self.value,
     expression = self.expression,
-    -- request_value = self:do_unwrap_object_value(self.request_value),
-    -- context_value = self:do_unwrap_object_value(self.context_value),
     path = self:unwrap_path(),
+    is_optional = self.is_optional,
   }
 end
 

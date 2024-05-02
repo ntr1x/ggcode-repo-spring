@@ -37,7 +37,7 @@ function Request:update(unit: Unit)
   return Request:from('update', unit)
 end
 
-function Request:update(unit: Unit)
+function Request:upsert(unit: Unit)
   return Request:from('upsert', unit)
 end
 
@@ -76,11 +76,11 @@ function Request:with_rules(children: table)
 end
 
 function Request:with_overrides(overrides: table)
-  return with_rules(overrides)
+  return Request:with_rules(overrides)
 end
 
 function Request:with_filters(filters: table)
-  return with_rules(filters)
+  return Request:with_rules(filters)
 end
 
 function Request:unwrap_overrides(parent_resource: table)
