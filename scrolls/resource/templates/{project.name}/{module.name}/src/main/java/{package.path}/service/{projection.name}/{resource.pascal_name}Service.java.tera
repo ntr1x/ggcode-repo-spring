@@ -10,6 +10,7 @@ import org.ntr1x.common.api.service.EvaluatorService;
 import org.ntr1x.common.api.service.GeneratorService;
 import org.ntr1x.common.web.criteria.PredicateFactory;
 import org.ntr1x.common.web.util.Validate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class {{resource.pascal_name}}Service {
 
+    @Qualifier("{{module.camel_name}}.{{unit.camel_name}}Repository")
     private final {{unit.pascal_name}}Repository {{unit.camel_name}}Repository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;

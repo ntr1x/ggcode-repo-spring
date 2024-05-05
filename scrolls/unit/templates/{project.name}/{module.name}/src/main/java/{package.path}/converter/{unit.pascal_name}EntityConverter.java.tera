@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 public interface {{unit.pascal_name}}EntityConverter {
 
-    @Component
     @RequiredArgsConstructor
+    @Component("{{module.camel_name}}.{{unit.camel_name}}EntityConverter.toModel")
     class ToModel implements AppConverter<{{unit.pascal_name}}Entity, {{unit.pascal_name}}Model> {
         private final ApplicationContext applicationContext;
 

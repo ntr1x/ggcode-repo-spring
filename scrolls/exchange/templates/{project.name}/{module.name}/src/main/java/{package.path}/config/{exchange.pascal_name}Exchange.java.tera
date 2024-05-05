@@ -1,17 +1,16 @@
 package {{package.name}}.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.ntr1x.common.events.model.CloudEventRoute;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
-
-import java.net.URI;
 
 @Configuration
 public class {{exchange.pascal_name}}Exchange {
     {% for topic in topics %}
     @Bean
+    @ConditionalOnMissingBean
     public NewTopic {{topic.camel_name}}Topic() {
         return TopicBuilder
                 .name("{{topic.snake_name}}")

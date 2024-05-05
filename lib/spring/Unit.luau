@@ -45,7 +45,9 @@ end
 
 function Unit:unwrap_module(name: string)
   return {
-    name = self.module.name
+    name = self.module.name,
+    camel_name = case.snakeToCamel(self.module.name),
+    pascal_name = case.snakeToPascal(self.module.name),
   }
 end
 

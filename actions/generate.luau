@@ -2,6 +2,7 @@ local ggcode = require('core/ggcode')
 local POM = require('spring/POM')
 local Project = require('spring/Project')
 local Module = require('spring/Module')
+local Assembly = require('spring/Assembly')
 local Profile = require('spring/Profile')
 local Exchange = require('spring/Exchange')
 local Topic = require('spring/exchange/Topic')
@@ -16,10 +17,12 @@ local Prop = require('spring/jpa/Prop')
 local Ref = require('spring/jpa/Ref')
 local Action = require('spring/security/Action')
 local Auth = require('spring/security/Auth')
+local Docker = require('spring/docker/Docker')
 
 local pom = POM:from('my.company', 'application', {
     "common_api",
     "common_web",
+    "common_ws",
     "common_events",
     "service_catalog",
     "service_customers",
@@ -28,6 +31,7 @@ local pom = POM:from('my.company', 'application', {
     "service_events",
     "gateway_payments",
     "gateway_customers",
+    "assembly_web",
 })
 
 local project = Project:from('my_application', pom)
@@ -36,33 +40,40 @@ local profile_local = Profile:new()
     :with_port(8080)
     :with_datasource('jdbc:postgresql://localhost:5432/app', 'app', 'app')
 
+local assembly_web = Module
+    :from(project, 'assembly_web')
+    :with_profile('local', profile_local:copy():with_port(8080))
+
 local service_catalog = Module
     :from(project, 'service_catalog')
-    :with_profile('local', profile_local:copy():with_port(8080))
+    :with_profile('local', profile_local:copy():with_port(8081))
 
 local service_customers = Module
     :from(project, 'service_customers')
-    :with_profile('local', profile_local:copy():with_port(8081))
+    :with_profile('local', profile_local:copy():with_port(8082))
 
 local service_basket = Module
     :from(project, 'service_basket')
-    :with_profile('local', profile_local:copy():with_port(8082))
+    :with_profile('local', profile_local:copy():with_port(8083))
 
 local service_payments = Module
     :from(project, 'service_payments')
-    :with_profile('local', profile_local:copy():with_port(8083))
+    :with_profile('local', profile_local:copy():with_port(8084))
 
 local service_events = Module
     :from(project, 'service_events')
-    :with_profile('local', profile_local:copy():with_port(8084))
+    :with_profile('local', profile_local:copy():with_port(8085))
 
 local gateway_payments = Module
     :from(project, 'gateway_payments')
-    :with_profile('local', profile_local:copy():with_port(8085))
+    :with_profile('local', profile_local:copy():with_port(8086))
 
 local gateway_customers = Module
     :from(project, 'gateway_customers')
-    :with_profile('local', profile_local:copy():with_port(8086))
+    :with_profile('local', profile_local:copy():with_port(8087))
+
+local docker = Docker:from(project)
+    :with_image('assembly_web')
 
 local unit_category = Unit
     :from(service_catalog, "public.category")
@@ -474,52 +485,65 @@ local projection_profile_order = Projection
     }
 
 -- Generate Project
-ggcode.generate "@/project" { target = '@examples', variables = project:unwrap() }
+ggcode.generate "@/project" { target = '@app', variables = project:unwrap() }
+
+-- Generate Build Scripts
+ggcode.generate "@/docker" { target = '@app', variables = docker:unwrap() }
 
 -- Generate Modules
-ggcode.generate "@/module_web" { target = '@examples', variables = service_basket:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = service_catalog:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = service_customers:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = service_payments:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = service_events:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = gateway_customers:unwrap() }
-ggcode.generate "@/module_web" { target = '@examples', variables = gateway_payments:unwrap() }
+ggcode.generate "@/assembly" {
+    target = '@app',
+    variables = Assembly:from(assembly_web, {
+        service_basket,
+        service_catalog,
+        service_customers,
+        service_payments,
+        service_events,
+    }):unwrap()
+}
+ggcode.generate "@/module_web" { target = '@app', variables = service_basket:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = service_catalog:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = service_customers:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = service_payments:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = service_events:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = gateway_customers:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = gateway_payments:unwrap() }
 
 -- Generate Exchanges
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_catalog:unwrap() }
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_payments:unwrap() }
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_customers:unwrap() }
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_gateway_payments:unwrap() }
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_gateway_customers:unwrap() }
-ggcode.generate "@/exchange" { target = '@examples', variables = exchange_service_events:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_service_catalog:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_service_payments:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_service_customers:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_gateway_payments:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_gateway_customers:unwrap() }
+ggcode.generate "@/exchange" { target = '@app', variables = exchange_service_events:unwrap() }
 
 -- Generate Units
-ggcode.generate "@/unit" { target = '@examples', variables = unit_category:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_product:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_customer:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_agent:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_customer_verify_email:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_customer_verify_phone:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_basket:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_basket_entry:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_favorite:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_basket_customer_ref:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_basket_product_ref:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_order:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_order_type:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_order_entry:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_order_status:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_payment:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_type:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_status:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_customer_ref:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_payment_product_ref:unwrap() }
-ggcode.generate "@/unit" { target = '@examples', variables = unit_event:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_category:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_product:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_customer:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_agent:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_customer_verify_email:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_customer_verify_phone:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_basket:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_basket_entry:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_favorite:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_basket_customer_ref:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_basket_product_ref:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_order:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_order_type:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_order_entry:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_order_status:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_payment:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_payment_type:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_payment_status:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_payment_customer_ref:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_payment_product_ref:unwrap() }
+ggcode.generate "@/unit" { target = '@app', variables = unit_event:unwrap() }
 
 -- Generate system resources
 
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_customer)
         :with_title("Customers")
@@ -527,7 +551,7 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_agent)
         :with_title("Agents")
@@ -535,35 +559,35 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_order_type)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_order_status)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_payment_type)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_payment_status)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_product)
         :with_title("Products")
@@ -571,7 +595,7 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_category)
         :with_title("Product Categories")
@@ -579,14 +603,14 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_payment)
         :with_title("Payments")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_system, unit_event)
         :with_title("Events")
@@ -596,42 +620,42 @@ ggcode.generate "@/resource" {
 -- Generate personal resources
 
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile, unit_basket)
         :with_title("Basket")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_basket, unit_basket_entry)
         :with_title("Basket")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile, unit_favorite)
         :with_title("Favorites")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_order, unit_order)
         :with_title("Orders")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_payment, unit_payment)
         :with_title("Payments")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_attribute, unit_customer)
         :with_title("Customer Profile")
@@ -639,7 +663,7 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_verify_phone, unit_customer_verify_phone)
         :with_title("Customer Profile")
@@ -667,7 +691,7 @@ ggcode.generate "@/resource" {
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_profile_verify_email, unit_customer_verify_email)
         :with_title("Customer Profile")
@@ -698,42 +722,42 @@ ggcode.generate "@/resource" {
 -- Publicly accessible resources
 
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_product)
         :with_title("Public")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_category)
         :with_title("Public")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_order_type)
         :with_title("Public")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_order_status)
         :with_title("Public")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_payment_type)
         :with_title("Public")
         :unwrap()
 }
 ggcode.generate "@/resource" {
-    target = '@examples',
+    target = '@app',
     variables = Resource
         :from(projection_anonymous, unit_payment_status)
         :with_title("Public")
@@ -743,49 +767,49 @@ ggcode.generate "@/resource" {
 -- Generate listeners
 
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(gateway_payments, "public_payment")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(gateway_payments, "public_order")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(gateway_customers, "public_customer")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(gateway_customers, "verify_phone")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(gateway_customers, "verify_email")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(service_customers, "update_phone")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(service_customers, "update_email")
         :unwrap()
 }
 ggcode.generate "@/listener" {
-    target = '@examples',
+    target = '@app',
     variables = Listener
         :from(service_events, "public_event")
         :with_topic_pattern("public_.*")
