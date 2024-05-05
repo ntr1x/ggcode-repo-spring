@@ -9,6 +9,10 @@ scrolls:
   path: scrolls/project
 - name: module_web
   path: scrolls/module_web
+- name: assembly
+  path: scrolls/assembly
+- name: docker
+  path: scrolls/docker
 - name: unit
   path: scrolls/unit
 - name: resource
@@ -21,5 +25,5 @@ repositories:
 - name: core
   uri: git@github.com:ntr1x/ggcode-repo-core.git
 targets:
-- name: '@examples'
-  path: examples
+- name: '@app'
+  path: app

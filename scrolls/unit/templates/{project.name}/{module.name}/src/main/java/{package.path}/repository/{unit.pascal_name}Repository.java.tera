@@ -3,9 +3,11 @@ package {{package.name}}.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import {{package.name}}.entity.{{unit.pascal_name}}Entity;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository("{{module.camel_name}}.{{unit.camel_name}}Repository")
 public interface {{unit.pascal_name}}Repository extends JpaRepository<{{unit.pascal_name}}Entity, {{entity.pk.java_type}}>, JpaSpecificationExecutor<{{unit.pascal_name}}Entity> {
   <T> Optional<T> findById({{entity.pk.java_type}} id, Class<T> type);
 }

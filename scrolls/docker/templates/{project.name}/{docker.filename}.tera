@@ -1,0 +1,26 @@
+FROM maven:3.9.5-eclipse-temurin-17-alpine as loader
+WORKDIR /app
+
+ADD pom.xml .
+{%- for module in docker.modules %}
+ADD {{module}}/pom.xml ./{{module}}/pom.xml
+{%- endfor %}
+RUN mvn dependency:go-offline
+
+FROM loader as builder
+ARG MODULE_NAME
+ARG MODULE_VERSION={{docker.version}}
+{%- for module in docker.modules %}
+ADD {{module}}/src ./{{module}}/src
+{%- endfor %}
+RUN mvn -Drevision=$MODULE_VERSION clean package --projects $MODULE_NAME --also-make
+
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+VOLUME /tmp
+ARG MODULE_NAME
+ARG MODULE_VERSION={{docker.version}}
+ENV JAR_FILE="/app/${MODULE_NAME}/target/${MODULE_NAME}-${MODULE_VERSION}-spring-boot.jar"
+COPY --from=builder ${JAR_FILE} /app/app.jar
+RUN ls -la .
+ENTRYPOINT java $JAVA_OPTS -jar /app/app.jar

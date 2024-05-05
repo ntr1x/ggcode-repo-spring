@@ -1,0 +1,19 @@
+server:
+  port: {{service.port}}
+  forward-headers-strategy: framework
+  servlet:
+    context-path: {{service.path}}
+
+spring:
+  application:
+    name: {{module.name}}
+  config:
+    import:
+      - classpath:shared-datasource.yaml
+      - classpath:shared-security.yaml
+
+springdoc:
+  api:
+    title: {{api.title}}
+    description: {{api.description}}
+    version: {{api.version}}

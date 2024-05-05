@@ -1,0 +1,10 @@
+version: 1.0-SNAPSHOT
+namespace: example
+images:
+- service_api
+modules:
+- common_api
+- common_web
+- common_ws
+- common_events
+- service_api

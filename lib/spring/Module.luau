@@ -64,7 +64,8 @@ end
 function Module:unwrap()
   local parent_pom = self.parent:unwrap_pom()
 
-  local pascal_name = case.snakeToPascal(self.name);
+  local pascal_name = case.snakeToPascal(self.name)
+  local camel_name = case.snakeToCamel(self.name)
 
   return {
     project = self:unwrap_project(),
@@ -76,6 +77,7 @@ function Module:unwrap()
     module = {
       name = self.name,
       pascal_name = pascal_name,
+      camel_name = camel_name,
       app_class = pascal_name .. 'Application',
       suite_class = pascal_name .. 'Suite',
     },

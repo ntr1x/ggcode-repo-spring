@@ -1,0 +1,21 @@
+package {{package.name}};
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+
+@SpringBootApplication
+@Import({{module.suite_class}}.class)
+public class {{module.app_class}} {
+
+    public static void main(String[] args) {
+        Class<?>[] sources = new Class[]{
+                {{module.app_class}}.class,
+                {%- for nested_module in nested_modules %}
+                {{nested_module.package.name}}.{{nested_module.module.app_class}}.class,
+                {%- endfor %}
+        };
+
+        SpringApplication.run(sources, args);
+    }
+}

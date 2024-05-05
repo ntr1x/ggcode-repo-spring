@@ -4,7 +4,6 @@ local Project = {
   __type = 'Project',
   name = nil,
   pom = nil,
-  modules = {}
 }
 
 function Project:new(o)
@@ -32,9 +31,15 @@ function Project:unwrap_pom()
   return pom:unwrap()
 end
 
+function Project:unwrap_project()
+  return {
+    name = self.name
+  }
+end
+
 function Project:unwrap()
   return {
-    project = { name = self.name },
+    project = self:unwrap_project(),
     pom = self:unwrap_pom(),
   }
 end

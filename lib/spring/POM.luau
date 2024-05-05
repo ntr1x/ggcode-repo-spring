@@ -2,6 +2,7 @@ local POM = {
   __type = 'POM',
   group_id = nil,
   artifact_id = nil,
+  version = '1.0-SNAPSHOT',
   parent = nil,
   modules = {},
 }
@@ -32,6 +33,11 @@ function POM:with_artifact_id(artifact_id: string)
   return self
 end
 
+function POM:with_version(version: string)
+  self.version = version
+  return self
+end
+
 function POM:with_parent(parent: POM)
   self.parent = parent
   return self
@@ -47,6 +53,7 @@ function POM:unwrap()
     parent = self.parent and self.parent:unwrap(),
     group_id = self.group_id,
     artifact_id = self.artifact_id,
+    version = self.version,
     modules = self.modules,
   }
 end
