@@ -1,0 +1,15 @@
+package {{package.name}}.config;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import {{package.name}}.property.AppOpenidClientProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "app.openid")
+public class {{module.pascal_name}}AppOpenidConfig {
+    @NotNull
+    private AppOpenidClientProperty client;
+}

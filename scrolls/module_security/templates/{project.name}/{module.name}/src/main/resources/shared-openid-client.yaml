@@ -1,0 +1,7 @@
+app:
+  openid:
+    client:
+      redirect-uri: '{referer}/auth/callback'
+      issuer-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}
+      # client-id: CHANGE_ME
+      # client-secret: CHANGE_ME

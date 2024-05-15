@@ -1,4 +1,4 @@
-package org.ntr1x.common.web.criteria;
+package org.ntr1x.common.jpa.criteria;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
