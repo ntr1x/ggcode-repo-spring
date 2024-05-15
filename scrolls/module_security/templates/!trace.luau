@@ -1,0 +1,4 @@
+-- print(yaml:stringify({
+--   pom = pom,
+--   module = module,
+-- }))

@@ -13,6 +13,7 @@ spring:
       - classpath:shared-datasource.yaml
       {%- endif %}
       - classpath:shared-security.yaml
+      - classpath:shared-openid-client.yaml
 
 springdoc:
   api:

@@ -1,0 +1,14 @@
+package {{package.name}};
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+
+@SpringBootApplication
+@Import({{module.suite_class}}.class)
+public class {{module.app_class}} {
+
+    public static void main(String[] args) {
+        SpringApplication.run({{module.app_class}}.class, args);
+    }
+}

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.ntr1x.common.api.annotation.Event;
 import org.ntr1x.common.api.service.EvaluatorService;
 import org.ntr1x.common.api.service.GeneratorService;
-import org.ntr1x.common.web.criteria.PredicateFactory;
+import org.ntr1x.common.jpa.criteria.PredicateFactory;
 import org.ntr1x.common.web.util.Validate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;

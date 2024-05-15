@@ -9,6 +9,8 @@ scrolls:
   path: scrolls/project
 - name: module_web
   path: scrolls/module_web
+- name: module_security
+  path: scrolls/module_security
 - name: assembly
   path: scrolls/assembly
 - name: docker

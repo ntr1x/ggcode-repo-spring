@@ -21,14 +21,16 @@ local Docker = require('spring/docker/Docker')
 
 local pom = POM:from('my.company', 'application', {
     "common_api",
+    "common_jpa",
     "common_web",
     "common_ws",
     "common_events",
+    "service_basket",
     "service_catalog",
     "service_customers",
-    "service_basket",
-    "service_payments",
     "service_events",
+    "service_payments",
+    "service_security",
     "gateway_payments",
     "gateway_customers",
     "assembly_web",
@@ -36,7 +38,14 @@ local pom = POM:from('my.company', 'application', {
 
 local project = Project:from('my_application', pom)
 
-local profile_local = Profile:new()
+local profile_local_with_client = Profile:from('local')
+    :with_port(8080)
+    :with_app_openid_client({
+        client_id = 'api',
+        client_secret = '4Ggxc50xzu5j1qFk5rZ4OPHwvNFXLpNX'
+    })
+
+local profile_local = Profile:from('local')
     :with_port(8080)
     :with_datasource('jdbc:postgresql://localhost:5432/app', 'app', 'app')
 
@@ -44,33 +53,76 @@ local assembly_web = Module
     :from(project, 'assembly_web')
     :with_profile('local', profile_local:copy():with_port(8080))
 
+local service_basket = Module
+    :from(project, 'service_basket')
+    :with_profile('local', profile_local:copy():with_port(8081))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
+
 local service_catalog = Module
     :from(project, 'service_catalog')
-    :with_profile('local', profile_local:copy():with_port(8081))
+    :with_profile('local', profile_local:copy():with_port(8082))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
 
 local service_customers = Module
     :from(project, 'service_customers')
-    :with_profile('local', profile_local:copy():with_port(8082))
-
-local service_basket = Module
-    :from(project, 'service_basket')
     :with_profile('local', profile_local:copy():with_port(8083))
-
-local service_payments = Module
-    :from(project, 'service_payments')
-    :with_profile('local', profile_local:copy():with_port(8084))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
 
 local service_events = Module
     :from(project, 'service_events')
+    :with_profile('local', profile_local:copy():with_port(8084))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
+
+local service_payments = Module
+    :from(project, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8085))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
+
+local service_security = Module
+    :from(project, 'service_security')
+    :with_profile('local', profile_local_with_client:copy():with_port(8086))
+    :with_plugins {
+        'common_web',
+        'common_events'
+    }
 
 local gateway_payments = Module
     :from(project, 'gateway_payments')
-    :with_profile('local', profile_local:copy():with_port(8086))
+    :with_profile('local', profile_local:copy():with_port(8087))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
 
 local gateway_customers = Module
     :from(project, 'gateway_customers')
-    :with_profile('local', profile_local:copy():with_port(8087))
+    :with_profile('local', profile_local:copy():with_port(8088))
+    :with_plugins {
+        'common_jpa',
+        'common_web',
+        'common_events'
+    }
 
 local docker = Docker:from(project)
     :with_image('assembly_web')
@@ -499,15 +551,17 @@ ggcode.generate "@/assembly" {
         service_customers,
         service_payments,
         service_events,
+        service_security,
     }):unwrap()
 }
 ggcode.generate "@/module_web" { target = '@app', variables = service_basket:unwrap() }
 ggcode.generate "@/module_web" { target = '@app', variables = service_catalog:unwrap() }
 ggcode.generate "@/module_web" { target = '@app', variables = service_customers:unwrap() }
-ggcode.generate "@/module_web" { target = '@app', variables = service_payments:unwrap() }
 ggcode.generate "@/module_web" { target = '@app', variables = service_events:unwrap() }
+ggcode.generate "@/module_web" { target = '@app', variables = service_payments:unwrap() }
 ggcode.generate "@/module_web" { target = '@app', variables = gateway_customers:unwrap() }
 ggcode.generate "@/module_web" { target = '@app', variables = gateway_payments:unwrap() }
+ggcode.generate "@/module_security" { target = '@app', variables = service_security:unwrap() }
 
 -- Generate Exchanges
 ggcode.generate "@/exchange" { target = '@app', variables = exchange_service_catalog:unwrap() }
@@ -669,7 +723,7 @@ ggcode.generate "@/resource" {
         :with_title("Customer Profile")
         :with_rules({
             Resource.Signal:create('verify_phone', '#result.created');
-            Resource.Signal:update('update_email', '#result.updated');
+            Resource.Signal:update('update_phone', '#result.updated');
             Resource.View:kafka({ "secret", "is_confirmed" });
             Resource.View:update({ "secret" });
             Resource.Request:create(unit_customer_verify_phone):with_rules {

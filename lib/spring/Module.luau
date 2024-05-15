@@ -1,3 +1,4 @@
+local Meta = require('core/Meta')
 local case = require('core/util/string/case')
 local Project = require('spring/Project')
 local POM = require('spring/POM')
@@ -7,7 +8,8 @@ local Module = {
   name = nil,
   pom = nil,
   database = nil,
-  profiles = {},
+  profiles = nil,
+  plugins = nil,
 }
 
 function Module:new(o)
@@ -23,7 +25,8 @@ function Module:from(parent: Project, name: string)
     name = name,
     database = nil,
     pom = nil,
-    profiles = {},
+    profiles = Meta:array {},
+    plugins = Meta:array {},
   })
 end
 
@@ -46,6 +49,14 @@ function Module:with_pom(pom: POM)
   return self
 end
 
+function Module:with_plugins(plugins: table)
+  plugins = plugins or Meta:table {}
+  for _, name in plugins do
+    self.plugins[#self.plugins + 1] = name
+  end
+  return self
+end
+
 function Module:unwrap_project()
   return {
     name = self.parent.name
@@ -59,6 +70,14 @@ function Module:unwrap_package()
     name = package_name,
     path = case.propToPath(package_name)
   }
+end
+
+function Module:unwrap_profiles()
+  local profiles = Meta:table {}
+  for _, profile in self.profiles do
+    profiles[profile.name] = profile:unwrap()
+  end
+  return profiles
 end
 
 function Module:unwrap()
@@ -85,7 +104,8 @@ function Module:unwrap()
       path = '/api/' .. self.name
     },
     database = self.database,
-    profiles = self.profiles,
+    profiles = self:unwrap_profiles(),
+    plugins = self.plugins
   }
 end
 

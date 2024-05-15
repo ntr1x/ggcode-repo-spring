@@ -2,7 +2,7 @@
 ggcode_modules/
 
 # Target directory
-app/
+/app/
 
 # Lock file
 ggcode-info.lock

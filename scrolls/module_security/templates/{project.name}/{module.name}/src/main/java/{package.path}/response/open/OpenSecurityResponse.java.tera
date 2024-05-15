@@ -1,0 +1,52 @@
+package {{package.name}}.response.open;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+public interface OpenSecurityResponse {
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "OpenSecurityResponseAuth")
+    class Auth {
+        private String authUri;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "OpenSecurityResponseRefresh")
+    class Refresh {
+        private String accessToken;
+        private Long accessExpiresIn;
+        private String refreshToken;
+        private Long refreshExpiresIn;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "OpenSecurityResponseRevoke")
+    class Revoke {
+        boolean accessTokenRevoked;
+        boolean refreshTokenRevoked;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "OpenSecurityResponseCallback")
+    class Callback {
+        private String accessToken;
+        private Long accessExpiresIn;
+        private String refreshToken;
+        private Long refreshExpiresIn;
+    }
+}
