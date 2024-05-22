@@ -17,6 +17,8 @@ scrolls:
   path: scrolls/docker
 - name: unit
   path: scrolls/unit
+- name: ddl
+  path: scrolls/ddl
 - name: resource
   path: scrolls/resource
 - name: exchange
@@ -28,4 +30,6 @@ repositories:
   uri: git@github.com:ntr1x/ggcode-repo-core.git
 targets:
 - name: '@app'
+  path: app
+- name: '@ddl'
   path: app

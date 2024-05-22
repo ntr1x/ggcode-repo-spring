@@ -1,5 +1,8 @@
+local Project = require('core/Project')
+
 local POM = {
   __type = 'POM',
+  project = nil,
   group_id = nil,
   artifact_id = nil,
   version = '1.0-SNAPSHOT',
@@ -14,8 +17,9 @@ function POM:new(o)
   return o
 end
 
-function POM:from(group_id: string, artifact_id: string, modules: table)
+function POM:from(project: Project, group_id: string, artifact_id: string, modules: table)
   return POM:new({
+    project = project,
     group_id = group_id,
     artifact_id = artifact_id,
     parent = nil,
@@ -48,12 +52,23 @@ function POM:with_module(module: string)
   return self
 end
 
-function POM:unwrap()
+function POM:unwrap_pom()
   return {
     parent = self.parent and self.parent:unwrap(),
     group_id = self.group_id,
     artifact_id = self.artifact_id,
     version = self.version,
+  }
+end
+
+function POM:unwrap_project()
+  return self.project:unwrap_project()
+end
+
+function POM:unwrap()
+  return {
+    project = self:unwrap_project(),
+    pom = self:unwrap_pom(),
     modules = self.modules,
   }
 end

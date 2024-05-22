@@ -16,7 +16,7 @@
     <packaging>pom</packaging>
 
     <modules>
-    {%- for module in pom.modules %}
+    {%- for module in modules %}
         <module>{{module}}</module>
     {%- endfor %}
     </modules>
