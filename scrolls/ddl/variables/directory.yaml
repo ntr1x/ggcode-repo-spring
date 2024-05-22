@@ -1,0 +1,3 @@
+base_name: changelog/ddl
+create_name: create
+drop_name: drop

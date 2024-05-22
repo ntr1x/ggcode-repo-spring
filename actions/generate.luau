@@ -1,6 +1,6 @@
 local ggcode = require('core/ggcode')
+local Project = require('core/Project')
 local POM = require('spring/POM')
-local Project = require('spring/Project')
 local Module = require('spring/Module')
 local Assembly = require('spring/Assembly')
 local Profile = require('spring/Profile')
@@ -18,8 +18,13 @@ local Ref = require('spring/jpa/Ref')
 local Action = require('spring/security/Action')
 local Auth = require('spring/security/Auth')
 local Docker = require('spring/docker/Docker')
+local DDL = require('spring/DDL')
 
-local pom = POM:from('my.company', 'application', {
+local project = Project:from('store_backend')
+
+local project_ddl = Project:from('store_migrate')
+
+local pom = POM:from(project, 'my.company', 'application', {
     "common_api",
     "common_jpa",
     "common_web",
@@ -36,8 +41,6 @@ local pom = POM:from('my.company', 'application', {
     "assembly_web",
 })
 
-local project = Project:from('my_application', pom)
-
 local profile_local_with_client = Profile:from('local')
     :with_port(8080)
     :with_app_openid_client({
@@ -50,11 +53,11 @@ local profile_local = Profile:from('local')
     :with_datasource('jdbc:postgresql://localhost:5432/app', 'app', 'app')
 
 local assembly_web = Module
-    :from(project, 'assembly_web')
+    :from(pom, 'assembly_web')
     :with_profile('local', profile_local:copy():with_port(8080))
 
 local service_basket = Module
-    :from(project, 'service_basket')
+    :from(pom, 'service_basket')
     :with_profile('local', profile_local:copy():with_port(8081))
     :with_plugins {
         'common_jpa',
@@ -63,7 +66,7 @@ local service_basket = Module
     }
 
 local service_catalog = Module
-    :from(project, 'service_catalog')
+    :from(pom, 'service_catalog')
     :with_profile('local', profile_local:copy():with_port(8082))
     :with_plugins {
         'common_jpa',
@@ -72,7 +75,7 @@ local service_catalog = Module
     }
 
 local service_customers = Module
-    :from(project, 'service_customers')
+    :from(pom, 'service_customers')
     :with_profile('local', profile_local:copy():with_port(8083))
     :with_plugins {
         'common_jpa',
@@ -81,7 +84,7 @@ local service_customers = Module
     }
 
 local service_events = Module
-    :from(project, 'service_events')
+    :from(pom, 'service_events')
     :with_profile('local', profile_local:copy():with_port(8084))
     :with_plugins {
         'common_jpa',
@@ -90,7 +93,7 @@ local service_events = Module
     }
 
 local service_payments = Module
-    :from(project, 'service_payments')
+    :from(pom, 'service_payments')
     :with_profile('local', profile_local:copy():with_port(8085))
     :with_plugins {
         'common_jpa',
@@ -99,7 +102,7 @@ local service_payments = Module
     }
 
 local service_security = Module
-    :from(project, 'service_security')
+    :from(pom, 'service_security')
     :with_profile('local', profile_local_with_client:copy():with_port(8086))
     :with_plugins {
         'common_web',
@@ -107,7 +110,7 @@ local service_security = Module
     }
 
 local gateway_payments = Module
-    :from(project, 'gateway_payments')
+    :from(pom, 'gateway_payments')
     :with_profile('local', profile_local:copy():with_port(8087))
     :with_plugins {
         'common_jpa',
@@ -116,7 +119,7 @@ local gateway_payments = Module
     }
 
 local gateway_customers = Module
-    :from(project, 'gateway_customers')
+    :from(pom, 'gateway_customers')
     :with_profile('local', profile_local:copy():with_port(8088))
     :with_plugins {
         'common_jpa',
@@ -124,7 +127,7 @@ local gateway_customers = Module
         'common_events'
     }
 
-local docker = Docker:from(project)
+local docker = Docker:from(pom)
     :with_image('assembly_web')
 
 local unit_category = Unit
@@ -288,7 +291,7 @@ unit_order:with_columns {
 }
 
 unit_order_type:with_columns {
-    PK:uuid 'id',
+    PK:int 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
@@ -303,7 +306,7 @@ unit_order_entry:with_columns {
 }
 
 unit_order_status:with_columns {
-    PK:uuid 'id',
+    PK:int 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
@@ -312,8 +315,8 @@ unit_payment:with_columns {
     PK:uuid 'id',
     Prop:uuid 'customer_id',
     Prop:uuid 'order_id',
-    Prop:uuid 'payment_status_id',
-    Prop:uuid 'payment_type_id',
+    Prop:int 'payment_status_id',
+    Prop:int 'payment_type_id',
     Prop:decimal 'value',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
@@ -322,13 +325,13 @@ unit_payment:with_columns {
 }
 
 unit_payment_type:with_columns {
-    PK:uuid 'id',
+    PK:int 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
 
 unit_payment_status:with_columns {
-    PK:uuid 'id',
+    PK:int 'id',
     Prop:text 'name',
     Prop:text 'description',
 }
@@ -395,6 +398,20 @@ local projection_system = Projection
         Action:select "hasAuthority('realm:admin')";
         Action:create("hasAuthority('realm:admin')"):with_rules {
             Action.Override:from_value("id", "generatorService.randomUUID()");
+        };
+        Action:remove "hasAuthority('realm:admin')";
+        Action:delete "hasAuthority('realm:admin')";
+        Action:update "hasAuthority('realm:admin')";
+        Action:replace "hasAuthority('realm:admin')";
+    }
+
+local projection_system_with_sequence = Projection
+    :from("system")
+    :with_rules {
+        Action:get "hasAuthority('realm:admin')";
+        Action:select "hasAuthority('realm:admin')";
+        Action:create("hasAuthority('realm:admin')"):with_rules {
+            Action.Override:from_value("id", "null");
         };
         Action:remove "hasAuthority('realm:admin')";
         Action:delete "hasAuthority('realm:admin')";
@@ -537,7 +554,7 @@ local projection_profile_order = Projection
     }
 
 -- Generate Project
-ggcode.generate "@/project" { target = '@app', variables = project:unwrap() }
+ggcode.generate "@/project" { target = '@app', variables = pom:unwrap() }
 
 -- Generate Build Scripts
 ggcode.generate "@/docker" { target = '@app', variables = docker:unwrap() }
@@ -615,28 +632,28 @@ ggcode.generate "@/resource" {
 ggcode.generate "@/resource" {
     target = '@app',
     variables = Resource
-        :from(projection_system, unit_order_type)
+        :from(projection_system_with_sequence, unit_order_type)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@app',
     variables = Resource
-        :from(projection_system, unit_order_status)
+        :from(projection_system_with_sequence, unit_order_status)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@app',
     variables = Resource
-        :from(projection_system, unit_payment_type)
+        :from(projection_system_with_sequence, unit_payment_type)
         :with_title("Dictionaries")
         :unwrap()
 }
 ggcode.generate "@/resource" {
     target = '@app',
     variables = Resource
-        :from(projection_system, unit_payment_status)
+        :from(projection_system_with_sequence, unit_payment_status)
         :with_title("Dictionaries")
         :unwrap()
 }
@@ -870,3 +887,23 @@ ggcode.generate "@/listener" {
         :with_batch_flag(true)
         :unwrap()
 }
+
+-- Generate ddl statements
+
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_customer.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_customer_verify_email.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_customer_verify_phone.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_agent.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_event.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_category.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_product.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_favorite.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_basket.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_basket_entry.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_order_status.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_order_type.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_order.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_order_entry.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_payment_status.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_payment_type.entity):unwrap() }
+ggcode.generate "@/ddl" { target = '@ddl', variables = DDL:from(project_ddl, unit_payment.entity):unwrap() }

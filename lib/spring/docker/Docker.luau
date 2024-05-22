@@ -1,8 +1,8 @@
 local Meta = require('core/Meta')
-local Project = require('spring/Project')
+local POM = require('spring/POM')
 
 local Docker = {
-  project = nil,
+  pom = nil,
   name = nil,
   filename = nil,
   namespace = nil,
@@ -16,9 +16,9 @@ function Docker:new(o)
   return o
 end
 
-function Docker:from(project: Project, name: string, images: table)
+function Docker:from(pom: POM, name: string, images: table)
   return Docker:new({
-    project = project,
+    pom = pom,
     name = name,
     namespace = name,
     images = images or Meta:array {},
@@ -42,13 +42,13 @@ end
 
 function Docker:unwrap()
   return {
-    project = self.project:unwrap_project(),
+    project = self.pom.project:unwrap_project(),
     docker = {
       name = self.name,
       filename = self.filename or 'Dockerfile',
       namespace = self.namespace,
-      version = self.project.pom.version,
-      modules = self.project.pom.modules,
+      version = self.pom.version,
+      modules = self.pom.modules,
       images = self.images
     }
   }

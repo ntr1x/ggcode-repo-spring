@@ -19,7 +19,7 @@ public class {{unit.pascal_name}}Entity {
     {%- for desc in entity.keys.array %}
     {# Blank line #}
     @Id
-    @Column(columnDefinition = "{{desc.column_definition}}", updatable = {{desc.updatable}})
+    @Column(updatable = {{desc.updatable}}{% if desc.column_definition %}, columnDefinition = "{{desc.column_definition}}"{% endif %})
     private {{desc.java_type}} {{desc.camel_name}};
     {%- endfor %}
 

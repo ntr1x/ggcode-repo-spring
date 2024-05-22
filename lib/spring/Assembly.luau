@@ -1,6 +1,5 @@
 local Meta = require('core/Meta')
 local case = require('core/util/string/case')
-local Project = require('spring/Project')
 local POM = require('spring/POM')
 
 local Assembly = {

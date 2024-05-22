@@ -1,6 +1,5 @@
 local Meta = require('core/Meta')
 local case = require('core/util/string/case')
-local Project = require('spring/Project')
 local POM = require('spring/POM')
 
 local Module = {
@@ -19,7 +18,7 @@ function Module:new(o)
   return o
 end
 
-function Module:from(parent: Project, name: string)
+function Module:from(parent: POM, name: string)
   return Module:new({
     parent = parent,
     name = name,
@@ -57,12 +56,6 @@ function Module:with_plugins(plugins: table)
   return self
 end
 
-function Module:unwrap_project()
-  return {
-    name = self.parent.name
-  }
-end
-
 function Module:unwrap_package()
   local parent_pom = self.parent:unwrap_pom()
   local package_name = parent_pom.group_id .. '.' .. case.snakeToProp(self.name)
@@ -80,18 +73,27 @@ function Module:unwrap_profiles()
   return profiles
 end
 
-function Module:unwrap()
-  local parent_pom = self.parent:unwrap_pom()
+function Module:unwrap_pom()
+  if self.pom ~= nil then
+    return self.pom:unwrap_pom()
+  end
+  return {
+    artifact_id = self.name,
+    parent = self.parent:unwrap_pom()
+  }
+end
 
+function Module:unwrap_project()
+  return self.parent:unwrap_project()
+end
+
+function Module:unwrap()
   local pascal_name = case.snakeToPascal(self.name)
   local camel_name = case.snakeToCamel(self.name)
 
   return {
-    project = self:unwrap_project(),
-    pom = {
-      artifact_id = self.name,
-      parent = parent_pom
-    },
+    project = self.parent.project:unwrap_project(),
+    pom = self:unwrap_pom(),
     package = self:unwrap_package(),
     module = {
       name = self.name,
