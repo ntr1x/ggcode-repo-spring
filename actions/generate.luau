@@ -465,6 +465,8 @@ unit_payments_payment:with_columns {
     Prop:decimal 'value',
     Prop:datetime 'created_at',
     Prop:datetime 'updated_at',
+    Ref:one { name = 'customer', column = 'customer_id', unit = unit_payments_customer_ref },
+    Ref:one { name = 'order', column = 'order_id', unit = unit_payments_order },
     Ref:one { name = 'payment_status', column = 'payment_status_id', unit = unit_payments_payment_status },
     Ref:one { name = 'payment_type', column = 'payment_type_id', unit = unit_payments_payment_type },
 }
