@@ -124,6 +124,13 @@ public interface {{resource.pascal_name}}Request {
         private Optional<{{desc.java_type}}> {{desc.camel_name}};
         {%- endif -%}
         {%- endfor %}
+
+        {%- for link in links %}
+        {%- if link.projection.actions.by_method.select %}
+        {# Blank line #}
+        private Optional<{{link.package.name}}.request.{{link.projection.name}}.{{link.resource.pascal_name}}Request.Select> {{link.link.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
     }
     {%- endif %}
 

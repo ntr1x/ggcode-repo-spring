@@ -15,6 +15,7 @@
     ["logstash.logback.version"] = "7.3",
     ["cloudevents.version"] = "3.0.0",
     ["commons-text.version"] = "1.12.0",
+    ["commons-beanutils.version"] = "1.9.4",
     ["hypersistence.version"] = "3.7.4",
     ["vavr.version"] = "0.10.4"
   },
@@ -33,6 +34,7 @@
       { group_id = "io.cloudevents", artifact_id = "cloudevents-kafka", version = "${cloudevents.version}" },
       { group_id = "io.cloudevents", artifact_id = "cloudevents-json-jackson", version = "${cloudevents.version}" },
       { group_id = "org.apache.commons", artifact_id = "commons-text", version = "${commons-text.version}" },
+      { group_id = "commons-beanutils", artifact_id = "commons-beanutils", version = "${commons-beanutils.version}" },
       { group_id = "io.hypersistence", artifact_id = "hypersistence-utils-hibernate-63", version = "${hypersistence.version}" },
     }
   },
