@@ -6,6 +6,7 @@ local View = require('spring/resource/View')
 local Request = require('spring/resource/Request')
 local Override = require('spring/resource/Override')
 local Filter = require('spring/resource/Filter')
+local Link = require('spring/resource/Link')
 local Fetch = require('spring/resource/Fetch')
 local Validate = require('spring/resource/Validate')
 
@@ -17,6 +18,7 @@ local Resource = {
   Request = Request,
   Override = Override,
   Filter = Filter,
+  Link = Link,
   Fetch = Fetch,
   Validate = Validate,
 
@@ -31,6 +33,7 @@ local Resource = {
   filters = nil,
   fetches = nil,
   validations = nil,
+  links = nil,
 }
 
 function Resource:new(o)
@@ -51,6 +54,7 @@ function Resource:from(projection: Projection, unit: Unit)
     filters = Meta:array {},
     fetches = Meta:array {},
     validations = Meta:array {},
+    links = Meta:array {},
   })
 end
 
@@ -82,6 +86,8 @@ function Resource:with_rules(children: table)
       self.fetches[#self.fetches + 1] = child
     elseif child.__type == 'Validation' then
       self.validations[#self.validations + 1] = child
+    elseif child.__type == 'Link' then
+      self.links[#self.links + 1] = child
     end
   end
 
@@ -144,6 +150,14 @@ function Resource:unwrap_signals()
   return signals
 end
 
+function Resource:unwrap_links()
+  local links = Meta:array {}
+  for i, link in self.links do
+    links[#links + 1] = link:unwrap()
+  end
+  return links
+end
+
 function Resource:unwrap_requests()
   local by_name = {}
 
@@ -199,6 +213,7 @@ function Resource:unwrap()
     signals = self:unwrap_signals(),
     views = self:unwrap_views(),
     requests = self:unwrap_requests(),
+    links = self:unwrap_links(),
   }
 end
 

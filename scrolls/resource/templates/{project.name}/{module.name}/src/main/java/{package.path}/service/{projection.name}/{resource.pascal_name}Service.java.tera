@@ -591,6 +591,28 @@ public class {{resource.pascal_name}}Service {
                     predicateFactory.fromOptional("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
                     {%- endif -%}
                     {%- endfor %}
+
+                    {%- for link in links %}
+                    {%- if link.projection.actions.by_method.select %}
+
+                    {%- for desc in link.requests.select.keys.array %}
+                    {%- if desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    predicateFactory.fromOptionalPath("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}"),
+                    {%- endif -%}
+                    {%- endfor %}
+
+                    {%- for desc in link.requests.select.columns.array %}
+                    {%- if desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    predicateFactory.fromOptionalPath("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}"),
+                    {%- endif -%}
+                    {%- endfor %}
+
+                    {%- endif -%}
+                    {%- endfor %}
             };
             return cb.and(Arrays.stream(predicates).filter(i -> i != null).toArray(Predicate[]::new));
         };
