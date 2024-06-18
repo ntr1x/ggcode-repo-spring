@@ -5,6 +5,7 @@ local POM = require('spring/POM')
 local Module = {
   parent = nil,
   name = nil,
+  kind = nil,
   pom = nil,
   database = nil,
   profiles = nil,
@@ -18,10 +19,11 @@ function Module:new(o)
   return o
 end
 
-function Module:from(parent: POM, name: string)
+function Module:from(parent: POM, kind: string, name: string)
   return Module:new({
     parent = parent,
     name = name,
+    kind = kind,
     database = nil,
     pom = nil,
     profiles = Meta:array {},
@@ -97,6 +99,7 @@ function Module:unwrap()
     package = self:unwrap_package(),
     module = {
       name = self.name,
+      kind = self.kind,
       pascal_name = pascal_name,
       camel_name = camel_name,
       app_class = pascal_name .. 'Application',

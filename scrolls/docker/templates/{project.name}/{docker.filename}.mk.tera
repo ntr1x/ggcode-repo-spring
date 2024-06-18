@@ -1,0 +1,10 @@
+# Build scripts
+{%- for image in docker.images %}
+build/{{image}}:
+	docker build \
+		--tag {{docker.namespace}}/{{image}}:{{docker.version}} \
+		--build-arg="MODULE_NAME=$${MODULE_NAME:={{image}}}" \
+		--build-arg="MODULE_VERSION=$${MODULE_VERSION:={{docker.version}}}" \
+		--file {{docker.filename}} \
+		.
+{%- endfor %}

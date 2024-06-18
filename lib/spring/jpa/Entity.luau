@@ -99,7 +99,7 @@ function Entity:unwrap()
   local pk = (if #self.keys > 0 then self.keys[1] else nil)
 
   return {
-    pk = pk,
+    pk = pk:unwrap(),
     schema = self.schema,
     table = self.table,
     keys = self:unwrap_keys(),
