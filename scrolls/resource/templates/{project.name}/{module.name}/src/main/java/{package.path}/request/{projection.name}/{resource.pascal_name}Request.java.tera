@@ -54,6 +54,15 @@ public interface {{resource.pascal_name}}Request {
         @Hidden @Builder.Default
         private String __name = "{{resource.snake_name}}:request:create";
 
+        {%- for desc in requests.create.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
         {%- for desc in requests.create.columns.array %}
         {%- if desc is containing('override') and desc.override.is_hidden %}
         {#- Ignore -#}

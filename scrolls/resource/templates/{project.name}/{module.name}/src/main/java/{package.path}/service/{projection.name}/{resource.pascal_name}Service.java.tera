@@ -139,7 +139,7 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Id key
     ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(key.getId())
+                .findById(key.get{{entity.pk.pascal_name}}())
                 .orElseThrow();
 
         {%- if requests.remove.fetches | length %}
@@ -450,7 +450,7 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Replace request
     ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(key.getId())
+                .findById(key.get{{entity.pk.pascal_name}}())
                 .orElseThrow();
 
         {%- if requests.replace.fetches | length %}
@@ -631,7 +631,7 @@ public class {{resource.pascal_name}}Service {
         {{resource.pascal_name}}Request.Id key
     ) {
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
-                .findById(key.getId())
+                .findById(key.get{{entity.pk.pascal_name}}())
                 .orElseThrow();
 
         {%- if requests.get.fetches | length %}
