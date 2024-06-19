@@ -1,6 +1,6 @@
 local Listener = require('spring/exchange/Listener')
 
-local modules = require('definitions/modules')
+local modules = require('spring/definitions/modules')
 
 local listeners = {}
 

@@ -1,6 +1,6 @@
 local Docker = require('spring/docker/Docker')
 
-local poms = require('definitions/poms')
+local poms = require('spring/definitions/poms')
 
 local dockerfiles = {}
 

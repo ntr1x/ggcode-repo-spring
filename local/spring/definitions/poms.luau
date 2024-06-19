@@ -1,6 +1,6 @@
 local POM = require('spring/POM')
 
-local projects = require('definitions/projects')
+local projects = require('spring/definitions/projects')
 
 local poms = {}
 

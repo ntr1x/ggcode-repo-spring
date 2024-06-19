@@ -3,7 +3,7 @@ local PK = require('spring/jpa/PK')
 local Prop = require('spring/jpa/Prop')
 local Ref = require('spring/jpa/Ref')
 
-local modules = require('definitions/modules')
+local modules = require('spring/definitions/modules')
 
 local units = {}
 

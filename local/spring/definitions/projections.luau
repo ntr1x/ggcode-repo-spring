@@ -2,7 +2,7 @@ local Projection = require('spring/Projection')
 local Action = require('spring/security/Action')
 local Auth = require('spring/security/Auth')
 
-local units = require('definitions/units')
+local units = require('spring/definitions/units')
 
 local projections = {}
 

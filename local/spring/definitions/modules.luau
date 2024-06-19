@@ -1,7 +1,7 @@
 local Module = require('spring/Module')
 
-local poms = require('definitions/poms')
-local profiles = require('definitions/profiles')
+local poms = require('spring/definitions/poms')
+local profiles = require('spring/definitions/profiles')
 
 local modules = {}
 

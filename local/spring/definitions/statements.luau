@@ -1,7 +1,7 @@
 local DDL = require('spring/DDL')
 
-local projects = require('definitions/projects')
-local units = require('definitions/units')
+local projects = require('spring/definitions/projects')
+local units = require('spring/definitions/units')
 
 local statements = {}
 

@@ -1,7 +1,7 @@
 local Exchange = require('spring/Exchange')
 local Topic = require('spring/exchange/Topic')
 
-local modules = require('definitions/modules')
+local modules = require('spring/definitions/modules')
 
 local exchanges = {}
 

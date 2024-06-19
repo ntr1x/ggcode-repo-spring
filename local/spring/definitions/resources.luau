@@ -1,7 +1,7 @@
 local Resource = require('spring/Resource')
 
-local projections = require('definitions/projections')
-local units = require('definitions/units')
+local projections = require('spring/definitions/projections')
+local units = require('spring/definitions/units')
 
 local resources = {}
 

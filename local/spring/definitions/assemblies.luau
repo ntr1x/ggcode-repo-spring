@@ -1,6 +1,6 @@
 local Assembly = require('spring/Assembly')
 
-local modules = require('definitions/modules')
+local modules = require('spring/definitions/modules')
 
 local assemblies = {}
 
