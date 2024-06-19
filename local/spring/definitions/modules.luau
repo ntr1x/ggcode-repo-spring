@@ -46,7 +46,7 @@ modules.service_payments = Module
   }
 
 modules.service_security = Module
-  :from(poms.pom, 'web', 'service_security')
+  :from(poms.pom, 'security', 'service_security')
   :with_profile('local', profiles.profile_local_with_client:copy():with_port(8086))
   :with_plugins {
     'common_web',
