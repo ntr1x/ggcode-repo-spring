@@ -27,6 +27,15 @@ public class OpenSecurityController {
         return openSecurityService.auth(authRequest);
     }
 
+    @PostMapping("/signIn")
+    @Operation(summary = "Sign In")
+    public OpenSecurityResponse.SignIn signIn (
+            @RequestBody OpenSecurityRequest.SignIn signInRequest
+    ) {
+        return openSecurityService.signIn(signInRequest);
+    }
+
+
     @PostMapping("/refresh")
     @Operation(summary = "Refresh user token")
     public OpenSecurityResponse.Refresh refresh (

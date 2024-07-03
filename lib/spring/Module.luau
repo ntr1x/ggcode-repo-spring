@@ -10,6 +10,7 @@ local Module = {
   database = nil,
   profiles = nil,
   plugins = nil,
+  configs = nil,
 }
 
 function Module:new(o)
@@ -28,6 +29,7 @@ function Module:from(parent: POM, kind: string, name: string)
     pom = nil,
     profiles = Meta:array {},
     plugins = Meta:array {},
+    configs = Meta:array {},
   })
 end
 
@@ -51,9 +53,17 @@ function Module:with_pom(pom: POM)
 end
 
 function Module:with_plugins(plugins: table)
-  plugins = plugins or Meta:table {}
+  plugins = plugins or Meta:array {}
   for _, name in plugins do
     self.plugins[#self.plugins + 1] = name
+  end
+  return self
+end
+
+function Module:with_configs(configs: table)
+  configs = configs or Meta:array {}
+  for _, name in configs do
+    self.configs[#self.configs + 1] = name
   end
   return self
 end
@@ -110,7 +120,8 @@ function Module:unwrap()
     },
     database = self.database,
     profiles = self:unwrap_profiles(),
-    plugins = self.plugins
+    plugins = self.plugins,
+    configs = self.configs,
   }
 end
 

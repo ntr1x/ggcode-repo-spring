@@ -1,7 +1,9 @@
 name: spring
 actions:
-- name: generate
-  path: actions/generate.luau
+- name: generate-app
+  path: actions/generate-app.luau
+- name: generate-store
+  path: actions/generate-store.luau
 - name: test/spring
   path: actions/test/spring.luau
 scrolls:
@@ -31,5 +33,5 @@ repositories:
 targets:
 - name: '@app'
   path: app
-- name: '@ddl'
-  path: app
+- name: '@store'
+  path: ../../ggcode-generated/ggcode-generated-store

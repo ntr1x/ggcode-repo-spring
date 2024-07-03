@@ -7,7 +7,7 @@ local modules = {}
 
 modules.assembly_web = Module
   :from(poms.pom, 'assembly', 'assembly_web')
-  :with_profile('local', profiles.profile_local:copy():with_port(8080))
+  :with_profile('local', profiles.profile_local_with_client:copy():with_port(8080))
 
 modules.service_catalog = Module
   :from(poms.pom, 'web', 'service_catalog')
@@ -33,6 +33,7 @@ modules.service_events = Module
   :with_plugins {
     'common_jpa',
     'common_web',
+    'common_ws',
     'common_events'
   }
 

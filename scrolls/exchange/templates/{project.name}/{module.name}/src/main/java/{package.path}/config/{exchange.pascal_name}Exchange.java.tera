@@ -10,7 +10,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class {{exchange.pascal_name}}Exchange {
     {% for topic in topics %}
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "{{topic.camel_name}}Topic")
     public NewTopic {{topic.camel_name}}Topic() {
         return TopicBuilder
                 .name("{{topic.snake_name}}")

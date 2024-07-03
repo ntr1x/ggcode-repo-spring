@@ -14,14 +14,14 @@ import java.util.List;
 {% endif -%}
 
 @Slf4j
-@Component
+@Component("{{module.camel_name}}.{{listener.camel_name}}Listener")
 public class {{listener.pascal_name}}Listener {
 {% if listener.batch %}
     @KafkaListener(
         containerFactory = CloudEventsConstants.CONTAINER_FACTORY_CLOUD_EVENT,
         batch = "true",
-        groupId = "{{listener.group_id}}",
-        topicPattern = "{{listener.topic_pattern}}"
+        groupId = "${app.{{module.name}}.listener.{{listener.snake_name}}.group_id:{{listener.group_id}}}",
+        topicPattern = "${app.{{module.name}}.listener.{{listener.snake_name}}.topic_pattern:{{listener.topic_pattern}}}"
     )
     public void listen(List<ConsumerRecord<String, CloudEvent>> list, Acknowledgment ack) {
         try {
@@ -37,8 +37,8 @@ public class {{listener.pascal_name}}Listener {
 {% else %}
     @KafkaListener(
         containerFactory = CloudEventsConstants.CONTAINER_FACTORY_CLOUD_EVENT,
-        groupId = "{{listener.group_id}}",
-        topicPattern = "{{listener.topic_pattern}}"
+        groupId = "${app.{{module.name}}.listener.{{listener.snake_name}}.group_id:{{listener.group_id}}}",
+        topicPattern = "${app.{{module.name}}.listener.{{listener.snake_name}}.topic_pattern:{{listener.topic_pattern}}}"
     )
     public void listen(ConsumerRecord<String, CloudEvent> record, Acknowledgment ack) {
         try {

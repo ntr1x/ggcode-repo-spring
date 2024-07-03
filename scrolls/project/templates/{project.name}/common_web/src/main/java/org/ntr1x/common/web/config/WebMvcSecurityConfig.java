@@ -1,7 +1,7 @@
 package org.ntr1x.common.web.config;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.ntr1x.common.web.security.GrantedAuthoritiesExtractor;
+import org.ntr1x.common.web.security.JwtAuthoritiesExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -43,7 +43,7 @@ public class WebMvcSecurityConfig {
 
     Converter<Jwt, AbstractAuthenticationToken> grantedAuthoritiesExtractor() {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new GrantedAuthoritiesExtractor());
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtAuthoritiesExtractor());
         return jwtAuthenticationConverter;
     }
 

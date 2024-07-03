@@ -1,4 +1,4 @@
-FROM maven:3.9.5-eclipse-temurin-17-alpine as loader
+FROM maven:3.9.5-eclipse-temurin-17-alpine AS loader
 WORKDIR /app
 
 ADD pom.xml .
@@ -7,7 +7,7 @@ ADD {{module}}/pom.xml ./{{module}}/pom.xml
 {%- endfor %}
 RUN mvn dependency:go-offline
 
-FROM loader as builder
+FROM loader AS builder
 ARG MODULE_NAME
 ARG MODULE_VERSION={{docker.version}}
 {%- for module in docker.modules %}

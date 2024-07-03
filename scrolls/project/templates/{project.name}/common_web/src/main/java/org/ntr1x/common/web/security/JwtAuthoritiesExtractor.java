@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class GrantedAuthoritiesExtractor implements Converter<Jwt, Collection<GrantedAuthority>> {
+public class JwtAuthoritiesExtractor implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     public Collection<GrantedAuthority> convert(Jwt jwt) {
 

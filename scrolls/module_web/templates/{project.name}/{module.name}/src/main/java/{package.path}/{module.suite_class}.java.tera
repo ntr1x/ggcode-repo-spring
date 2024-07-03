@@ -12,6 +12,10 @@ import org.ntr1x.common.web.config.OpenApiSecurityConfig;
 import org.ntr1x.common.web.config.WebMvcConfig;
 import org.ntr1x.common.web.config.WebMvcSecurityConfig;
 {%- endif %}
+{%- if plugins is containing('common_ws') %}
+import org.ntr1x.common.ws.config.WebSocketConfig;
+import org.ntr1x.common.ws.config.WebSocketHubConfig;
+{%- endif %}
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -28,10 +32,17 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         OpenApiConfig.class,
         OpenApiSecurityConfig.class,
         {%- endif %}
+        {%- if plugins is containing('common_ws') %}
+        WebSocketConfig.class,
+        WebSocketHubConfig.class,
+        {%- endif %}
         {%- if plugins is containing('common_events') %}
         CloudEventsKafkaConfig.class,
         CloudEventsBeanConfig.class,
         {%- endif %}
+        {%- for config in configs %}
+        {{config}}.class,
+        {%- endfor %}
 })
 @ComponentScan(basePackageClasses = {{module.pascal_name}}Config.class)
 {%- if plugins is containing('common_jpa') %}

@@ -10,7 +10,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class {{module.pascal_name}}Exchange {
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "securityEventTopic")
     public NewTopic securityEventTopic() {
         return TopicBuilder
                 .name("security_event")

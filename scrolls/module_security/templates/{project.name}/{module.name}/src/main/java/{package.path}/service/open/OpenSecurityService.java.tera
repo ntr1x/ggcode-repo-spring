@@ -1,11 +1,14 @@
-package {{package.name}}.service.open;
+package com.example.service.security.service.open;
 
+import com.example.service.security.config.ServiceSecurityAppOpenidConfig;
+import com.example.service.security.model.PrincipalModel;
+import com.example.service.security.property.AppOpenidClientProperty;
+import com.example.service.security.request.open.OpenSecurityRequest;
+import com.example.service.security.response.open.OpenSecurityResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import {{package.name}}.config.ServiceSecurityAppOpenidConfig;
-import {{package.name}}.property.AppOpenidClientProperty;
-import {{package.name}}.request.open.OpenSecurityRequest;
-import {{package.name}}.response.open.OpenSecurityResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +20,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -26,28 +30,30 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OpenSecurityService {
 
     private final ServiceSecurityAppOpenidConfig serviceSecurityAppOpenidConfig;
+    private final ConversionService conversionService;
     private final JwtDecoder jwtDecoder;
 
     public OpenSecurityResponse.Auth auth(OpenSecurityRequest.Auth authRequest) {
         AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
 
-        System.out.println(config.toString());
+        String redirectUrl = Optional
+                .ofNullable(authRequest.getRedirectUri())
+                .orElse(config.getRedirectUri());
 
         UriComponents uri = UriComponentsBuilder
                 .fromHttpUrl(config.getIssuerUri())
                 .path(config.getAuthorizationPath())
                 .queryParam("response_type", "code")
                 .queryParam("client_id", config.getClientId())
-                .queryParam("redirect_uri", Optional
-                        .ofNullable(authRequest.getRedirectUri())
-                        .orElse(config.getRedirectUri())
-                )
-                .queryParam("state", authRequest.getState())
+                .queryParamIfPresent("kc_idp_hint", Optional.ofNullable(authRequest.getProvider()))
+                .queryParamIfPresent("state", Optional.ofNullable(authRequest.getState()))
+                .queryParam("redirect_uri", redirectUrl)
                 .build();
 
         return OpenSecurityResponse.Auth
@@ -79,13 +85,18 @@ public class OpenSecurityService {
                         new ResponseStatusException(HttpStatus.UNAUTHORIZED, clientResponse.toString())
                 ))
                 .bodyToMono(KeycloakTokenResponse.class)
-                .map(response -> OpenSecurityResponse.Refresh
-                        .builder()
-                        .accessToken(response.getAccessToken())
-                        .accessExpiresIn(response.getExpiresIn())
-                        .refreshToken(response.getRefreshToken())
-                        .refreshExpiresIn(response.getRefreshExpiresIn())
-                        .build())
+                .map(response -> {
+                    Jwt jwt = jwtDecoder.decode(response.getAccessToken());
+                    PrincipalModel principal = conversionService.convert(jwt, PrincipalModel.class);
+                    return OpenSecurityResponse.Refresh
+                            .builder()
+                            .accessToken(response.getAccessToken())
+                            .accessExpiresIn(response.getExpiresIn())
+                            .refreshToken(response.getRefreshToken())
+                            .refreshExpiresIn(response.getRefreshExpiresIn())
+                            .principal(principal)
+                            .build();
+                })
                 .block(Duration.ofSeconds(5));
     }
 
@@ -175,37 +186,64 @@ public class OpenSecurityService {
                 .body(BodyInserters.fromFormData(bodyValues))
                 .retrieve()
                 .bodyToMono(KeycloakTokenResponse.class)
-                .map(response -> OpenSecurityResponse.Callback
-                        .builder()
-                        .accessToken(response.getAccessToken())
-                        .accessExpiresIn(response.getExpiresIn())
-                        .refreshToken(response.getRefreshToken())
-                        .refreshExpiresIn(response.getRefreshExpiresIn())
-                        .build())
-                .doOnError((err) -> {
-                    System.out.println(err);
+                .map(response -> {
+                    Jwt jwt = jwtDecoder.decode(response.getAccessToken());
+                    PrincipalModel principal = conversionService.convert(jwt, PrincipalModel.class);
+                    return OpenSecurityResponse.Callback
+                            .builder()
+                            .accessToken(response.getAccessToken())
+                            .accessExpiresIn(response.getExpiresIn())
+                            .refreshToken(response.getRefreshToken())
+                            .refreshExpiresIn(response.getRefreshExpiresIn())
+                            .principal(principal)
+                            .build();
                 })
-                .map(response -> CallbackContext.builder().response(response).build())
-                .flatMap(context -> {
-                    Jwt jwt = jwtDecoder.decode(context.getResponse().getAccessToken());
-                    return Mono.just(context.toBuilder().jwt(jwt).build());
-                })
-                // TODO: Materialize if necessary
-//                .flatMap(context -> {
-//                    JwtAuthenticationToken jwtAuthenticationToken = new JwtAuthenticationToken(context.jwt);
-//                    PrincipalModel principal = conversionService.convert(jwtAuthenticationToken, PrincipalModel.class);
-//                    return Mono.just(context);
-//                })
-                .flatMap(context -> Mono.just(context.getResponse()))
+                .doOnError(err -> log.warn("Failed to authenticate", err))
                 .block();
     }
 
-    @Data
-    @Builder(toBuilder = true)
-    @RequiredArgsConstructor
-    public static class CallbackContext {
-        private final OpenSecurityResponse.Callback response;
-        private final Jwt jwt;
+    public OpenSecurityResponse.SignIn signIn(OpenSecurityRequest.SignIn signInRequest) {
+        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+
+        MultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
+
+        bodyValues.add("grant_type", "password");
+        bodyValues.add("client_id", config.getClientId());
+        bodyValues.add("client_secret", config.getClientSecret());
+        bodyValues.add("username", signInRequest.getUsername());
+        bodyValues.add("password", signInRequest.getPassword());
+
+        try {
+            return WebClient
+                    .builder()
+                    .clientConnector(new ReactorClientHttpConnector(
+                            HttpClient.create().wiretap(true)
+                    ))
+                    .baseUrl(config.getIssuerUri())
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                    .build()
+                    .post()
+                    .uri(config.getTokenPath())
+                    .body(BodyInserters.fromFormData(bodyValues))
+                    .retrieve()
+                    .bodyToMono(KeycloakTokenResponse.class)
+                    .map(response -> {
+                        Jwt jwt = jwtDecoder.decode(response.getAccessToken());
+                        PrincipalModel principal = conversionService.convert(jwt, PrincipalModel.class);
+                        return OpenSecurityResponse.SignIn
+                                .builder()
+                                .accessToken(response.getAccessToken())
+                                .accessExpiresIn(response.getExpiresIn())
+                                .refreshToken(response.getRefreshToken())
+                                .refreshExpiresIn(response.getRefreshExpiresIn())
+                                .principal(principal)
+                                .build();
+                    })
+                    .doOnError(err -> log.warn("Failed to authenticate", err))
+                    .block();
+        } catch (WebClientResponseException e) {
+            throw new ResponseStatusException(e.getStatusCode(), e.getMessage(), e);
+        }
     }
 
     @Data

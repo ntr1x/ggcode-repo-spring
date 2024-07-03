@@ -83,7 +83,9 @@ end
 
 function Listener:unwrap_module()
   return {
-    name = self.module.name
+    name = self.module.name,
+    camel_name = case.snakeToCamel(self.module.name),
+    pascal_name = case.snakeToPascal(self.module.name),
   }
 end
 

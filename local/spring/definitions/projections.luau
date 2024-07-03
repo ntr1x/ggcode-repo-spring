@@ -9,41 +9,41 @@ local projections = {}
 projections.projection_system = Projection
   :from("system")
   :with_rules {
-    Action:get "hasAuthority('realm:admin')";
-    Action:select "hasAuthority('realm:admin')";
-    Action:create("hasAuthority('realm:admin')"):with_rules {
+    Action:get "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:select "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:create("hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')"):with_rules {
       Action.Override:from_value("id", "generatorService.randomUUID()");
     };
-    Action:remove "hasAuthority('realm:admin')";
-    Action:delete "hasAuthority('realm:admin')";
-    Action:update "hasAuthority('realm:admin')";
-    Action:replace "hasAuthority('realm:admin')";
+    Action:remove "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:delete "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:update "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:replace "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
   }
 
 projections.projection_system_named_dictionary = Projection
   :from("system")
   :with_rules {
-    Action:get "hasAuthority('realm:admin')";
-    Action:select "hasAuthority('realm:admin')";
-    Action:create("hasAuthority('realm:admin')");
-    Action:remove "hasAuthority('realm:admin')";
-    Action:delete "hasAuthority('realm:admin')";
-    Action:update "hasAuthority('realm:admin')";
-    Action:replace "hasAuthority('realm:admin')";
+    Action:get "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:select "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:create "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:remove "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:delete "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:update "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:replace "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
   }
 
 projections.projection_system_with_sequence = Projection
   :from("system")
   :with_rules {
-    Action:get "hasAuthority('realm:admin')";
-    Action:select "hasAuthority('realm:admin')";
-    Action:create("hasAuthority('realm:admin')"):with_rules {
+    Action:get "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:select "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:create("hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')"):with_rules {
       Action.Override:from_value("id", "null");
     };
-    Action:remove "hasAuthority('realm:admin')";
-    Action:delete "hasAuthority('realm:admin')";
-    Action:update "hasAuthority('realm:admin')";
-    Action:replace "hasAuthority('realm:admin')";
+    Action:remove "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:delete "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:update "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
+    Action:replace "hasAnyAuthority('realm:developer', 'realm:admin', 'realm:support')";
   }
 
 projections.projection_anonymous = Projection

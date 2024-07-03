@@ -18,4 +18,8 @@ listeners.listener_service_events_event = Listener
   :with_topic_pattern("public_.*")
   :with_batch_flag(true)
 
+listeners.listener_service_events_dispatch = Listener
+  :from(modules.service_events, "public_dispatch")
+  :with_batch_flag(true)
+
 return listeners

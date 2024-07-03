@@ -1,5 +1,6 @@
-package {{package.name}}.response.open;
+package com.example.service.security.response.open;
 
+import com.example.service.security.model.PrincipalModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,12 +21,26 @@ public interface OpenSecurityResponse {
     @Builder(toBuilder = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "OpenSecurityResponseCallback")
+    class SignIn {
+        private String accessToken;
+        private Long accessExpiresIn;
+        private String refreshToken;
+        private Long refreshExpiresIn;
+        private PrincipalModel principal;
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(name = "OpenSecurityResponseRefresh")
     class Refresh {
         private String accessToken;
         private Long accessExpiresIn;
         private String refreshToken;
         private Long refreshExpiresIn;
+        private PrincipalModel principal;
     }
 
     @Data
@@ -48,5 +63,6 @@ public interface OpenSecurityResponse {
         private Long accessExpiresIn;
         private String refreshToken;
         private Long refreshExpiresIn;
+        private PrincipalModel principal;
     }
 }
