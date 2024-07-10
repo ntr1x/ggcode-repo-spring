@@ -1,15 +1,15 @@
 package {{package.name}}.service.{{projection.name}};
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import org.ntr1x.common.api.annotation.Event;
 import org.ntr1x.common.api.service.EvaluatorService;
 import org.ntr1x.common.api.service.GeneratorService;
-import org.ntr1x.common.jpa.criteria.PredicateFactory;
+import org.ntr1x.common.jpa.criteria.SpecificationBuilder;
 import org.ntr1x.common.web.util.Validate;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -233,36 +233,34 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
         {%- endif %}
 
-        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) -> {
-            PredicateFactory predicateFactory = new PredicateFactory(root, query, cb);
-            Predicate[] predicates = new Predicate [] {
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
                     {%- for desc in requests.update.keys.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
                     {%- for f in requests.update.filters %}
                     {%- if f is containing('value') %}
-                    predicateFactory.fromValue("{{f.camel_name}}", {{f.value}}),
+                    .withValueMatch("{{f.camel_name}}", {{f.value}})
                     {%- elif f is containing('expression') %}
-                    predicateFactory.fromValue("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class)),
+                    .withValueMatch("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class))
                     {%- elif f is containing('path') %}
-                    predicateFactory.from{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}),
+                    .with{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}Match("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
                     {%- else %}
                     {#- Ignore -#}
                     {%- endif -%}
                     {%- endfor %}
-            };
-            return cb.and(Arrays.stream(predicates).filter(i -> i != null).toArray(Predicate[]::new));
-        };
+                    .build();
 
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findOne(specification)
@@ -345,36 +343,34 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
         {%- endif %}
 
-        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) -> {
-            PredicateFactory predicateFactory = new PredicateFactory(root, query, cb);
-            Predicate[] predicates = new Predicate [] {
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
                     {%- for desc in requests.upsert.keys.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
                     {%- for f in requests.upsert.filters %}
                     {%- if f is containing('value') %}
-                    predicateFactory.fromValue("{{f.camel_name}}", {{f.value}}),
+                    .withValueMatch("{{f.camel_name}}", {{f.value}})
                     {%- elif f is containing('expression') %}
-                    predicateFactory.fromValue("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class)),
+                    .withValueMatch("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class))
                     {%- elif f is containing('path') %}
-                    predicateFactory.from{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}),
+                    .with{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}Match("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
                     {%- else %}
                     {#- Ignore -#}
                     {%- endif -%}
                     {%- endfor %}
-            };
-            return cb.and(Arrays.stream(predicates).filter(i -> i != null).toArray(Predicate[]::new));
-        };
+                    .build();
 
         {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
                 .builder()
@@ -562,33 +558,33 @@ public class {{resource.pascal_name}}Service {
         {%- endfor %}
         {%- endif %}
 
-        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) -> {
-            PredicateFactory predicateFactory = new PredicateFactory(root, query, cb);
-            Predicate[] predicates = new Predicate [] {
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
                     {%- for desc in requests.select.keys.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptional("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
                     {%- for desc in requests.select.columns.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptional("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
 
@@ -599,7 +595,7 @@ public class {{resource.pascal_name}}Service {
                     {%- if desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptionalPath("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}"),
+                    .withOptionalPathMatch("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}")
                     {%- endif -%}
                     {%- endfor %}
 
@@ -607,15 +603,15 @@ public class {{resource.pascal_name}}Service {
                     {%- if desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptionalPath("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}"),
+                    .withOptionalPathMatch("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}")
                     {%- endif -%}
                     {%- endfor %}
 
                     {%- endif -%}
                     {%- endfor %}
-            };
-            return cb.and(Arrays.stream(predicates).filter(i -> i != null).toArray(Predicate[]::new));
-        };
+                    .withWhereStatements(request.get__where())
+                    .withOrderStatements(request.get__order())
+                    .build();
 
         return {{unit.camel_name}}Repository
                 .findAll(specification, pageable)
@@ -699,38 +695,36 @@ public class {{resource.pascal_name}}Service {
         {%- endif %}
         {% endfor %}
 
-        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) -> {
-            PredicateFactory predicateFactory = new PredicateFactory(root, query, cb);
-            Predicate[] predicates = new Predicate [] {
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
                     {%- for desc in requests.find.keys.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptional("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
                     {%- for desc in requests.find.columns.array %}
                     {%- if desc is containing('override') and desc.override is containing('value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", {{desc.override.value}}),
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
                     {%- elif desc is containing('override') and desc.override is containing('context_value') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}()),
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
                     {%- elif desc is containing('override') and desc.override is containing('expression') %}
-                    predicateFactory.fromValue("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class)),
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
                     {%- elif desc is containing('override') and desc.override.is_hidden %}
                     {#- Ignore -#}
                     {%- else %}
-                    predicateFactory.fromOptional("{{desc.camel_name}}", request.get{{desc.pascal_name}}()),
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
                     {%- endif -%}
                     {%- endfor %}
-            };
-            return cb.and(Arrays.stream(predicates).filter(i -> i != null).toArray(Predicate[]::new));
-        };
+                    .build();
 
         return {{unit.camel_name}}Repository
                 .findOne(specification)

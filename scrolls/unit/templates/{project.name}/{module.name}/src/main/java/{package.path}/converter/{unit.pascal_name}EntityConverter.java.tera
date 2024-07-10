@@ -27,6 +27,9 @@ public interface {{unit.pascal_name}}EntityConverter {
                     {%- for desc in entity.columns.array %}
                     .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
                     {%- endfor %}
+                    {%- for desc in entity.formulas.array %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endfor %}
                     {%- if entity.refs | length > 0 -%}
                     {%- for desc in entity.refs.array %}
                     {%- if desc.variant == 'one' %}

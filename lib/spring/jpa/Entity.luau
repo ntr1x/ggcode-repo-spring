@@ -8,6 +8,7 @@ local Entity = {
   keys = {},
   columns = {},
   refs = {},
+  formulas = {},
 }
 
 function Entity:new(o)
@@ -24,9 +25,10 @@ function Entity:from(name: string, children: table)
     :new({
       schema = schema,
       table = table,
-      keys = {},
-      columns = {},
-      refs = {}
+      keys = Meta:array {},
+      columns = Meta:array {},
+      refs = Meta:array {},
+      formulas = Meta:array {}
     })
     :with_columns(children)
 end
@@ -41,6 +43,8 @@ function Entity:with_columns(children: table)
       self.columns[#self.columns + 1] = child
     elseif child.__type == 'Ref' then
       self.refs[#self.refs + 1] = child
+    elseif child.__type == 'Formula' then
+      self.formulas[#self.formulas + 1] = child
     end
   end
 
@@ -95,6 +99,22 @@ function Entity:unwrap_refs()
   }
 end
 
+function Entity:unwrap_formulas()
+  local by_name = Meta:table {}
+  local array = Meta:array {}
+
+  for i, formula in self.formulas do
+    local unwrapped = formula:unwrap()
+    array[#array + 1] = unwrapped
+    by_name[unwrapped.name] = unwrapped
+  end
+
+  return {
+    by_name = by_name,
+    array = array,
+  }
+end
+
 function Entity:unwrap()
   local pk = (if #self.keys > 0 then self.keys[1] else nil)
 
@@ -105,6 +125,7 @@ function Entity:unwrap()
     keys = self:unwrap_keys(),
     columns = self:unwrap_columns(),
     refs = self:unwrap_refs(),
+    formulas = self:unwrap_formulas(),
   }
 end
 

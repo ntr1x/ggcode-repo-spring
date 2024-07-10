@@ -2,6 +2,7 @@ local Unit = require('spring/Unit')
 local PK = require('spring/jpa/PK')
 local Prop = require('spring/jpa/Prop')
 local Ref = require('spring/jpa/Ref')
+local Formula = require('spring/jpa/Formula')
 
 local modules = require('spring/definitions/modules')
 
@@ -172,6 +173,7 @@ units.unit_profile_customer:with_columns {
   Prop:text 'name',
   Prop:text 'surname',
   Prop:text 'patronymic',
+  Formula:text('full_name', "CONCAT_WS(' ', {alias}.name, {alias}.patronymic, {alias}.surname)"),
   Ref:many { name = 'agents', column = 'customer_id', unit = units.unit_profile_agent },
   Ref:many { name = 'phones', column = 'customer_id', unit = units.unit_profile_customer_verify_phone },
   Ref:many { name = 'emails', column = 'customer_id', unit = units.unit_profile_customer_verify_email },

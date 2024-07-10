@@ -40,6 +40,25 @@ function Profile:with_datasource(url: string, username: string, password: string
   return self
 end
 
+function Profile:with_sql_trace()
+  self.config.spring = self.config.spring or Meta:table {}
+
+  local fragment = {
+    jpa = {
+      ['show-sql'] = true,
+      properties = {
+        hibernate = {
+          format_sql = true
+        }
+      }
+    }
+  }
+
+  OBJECT.merge(self.config.spring, fragment)
+
+  return self
+end
+
 function Profile:with_app_openid_client(client: table)
   self.config.app = self.config.app or Meta:table {}
   self.config.app.openid = self.config.app.openid or Meta:table {}

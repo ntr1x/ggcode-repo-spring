@@ -1,7 +1,9 @@
 package org.ntr1x.common.web.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.ntr1x.common.web.security.JwtAuthenticationEntryPoint;
 import org.ntr1x.common.web.security.JwtAuthoritiesExtractor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -18,11 +20,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtIssuerAuthenticationManagerResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebMvcSecurityConfig {
+
+    @Autowired
+    private HandlerExceptionResolver handlerExceptionResolver;
+
     @Bean
     SecurityFilterChain apiSecurity(
             HttpSecurity http,
@@ -32,7 +39,9 @@ public class WebMvcSecurityConfig {
                 .csrf(c -> c.disable())
                 .cors(c -> c.disable())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
-                .oauth2ResourceServer(oauth2 -> oauth2.authenticationManagerResolver(authenticationManagerResolver))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationManagerResolver(authenticationManagerResolver)
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint(handlerExceptionResolver)))
                 .build();
     }
 

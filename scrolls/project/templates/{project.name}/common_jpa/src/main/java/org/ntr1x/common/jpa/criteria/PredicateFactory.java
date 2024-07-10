@@ -8,12 +8,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class PredicateFactory<T> {
-    private final Root<T> root;
-    private final CriteriaQuery<T> query;
-    private final CriteriaBuilder cb;
+public class PredicateFactory<E> {
+    public final Root<E> root;
+    public final CriteriaQuery<?> query;
+    public final CriteriaBuilder cb;
 
-    public Predicate fromOptionalPath(String name, Object bean, Class<T> clazz, String path) {
+    public <T> Predicate fromOptionalPath(String name, Object bean, Class<T> clazz, String path) {
         return fromOptional(name, findInOptionalPath(bean, clazz, path));
     }
 
@@ -21,13 +21,13 @@ public class PredicateFactory<T> {
         if (optional == null) {
             return null;
         }
-        Path<T> cursor = root;
+        Path<?> cursor = root;
         String[] segments = name.split("\\.");
         for (String segment : segments) {
             cursor = cursor.get(segment);
         }
 
-        Path<T> element = cursor;
+        Path<?> element = cursor;
 
         return optional
                 .map(value -> cb.equal(element, value))
