@@ -12,7 +12,9 @@ public class {{module.app_class}} {
         Class<?>[] sources = new Class[]{
                 {{module.app_class}}.class,
                 {%- for nested_module in nested_modules %}
+                {%- if nested_module.module.kind != 'lib' %}
                 {{nested_module.package.name}}.{{nested_module.module.app_class}}.class,
+                {%- endif %}
                 {%- endfor %}
         };
 

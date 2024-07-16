@@ -17,6 +17,12 @@ public @interface Event {
     String payloadEl() default "#result";
 
     /**
+     * Treat payload as a collection of events
+     * @return <code>true</code> if the payload should be treated as a collection of events
+     */
+    boolean unwind() default false;
+
+    /**
      * Condition to check before sending an event
      *
      * @return Expression to evaluate

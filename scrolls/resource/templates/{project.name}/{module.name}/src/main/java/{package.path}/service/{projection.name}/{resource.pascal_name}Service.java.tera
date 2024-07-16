@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 @Service
@@ -188,6 +189,72 @@ public class {{resource.pascal_name}}Service {
     }
     {%- endif %}
 
+    {%- if projection.actions.by_method.remove or projection.actions.by_method.delete %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.remove | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %}, unwind = true)
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.RemoveAll removeAll(
+        {{resource.pascal_name}}Request.Context context,
+        Collection<{{resource.pascal_name}}Request.Id> keys
+    ) {
+        Collection<{{unit.pascal_name}}Entity> entities = {{unit.camel_name}}Repository
+                .findAllById(keys.stream().map({{resource.pascal_name}}Request.Id::get{{entity.pk.pascal_name}}).toList());
+
+        {%- if requests.remove.fetches | length %}
+        {% for fetch in requests.remove.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+
+        {%- if requests.remove.validations | length %}
+        {# Blank line #}
+        for ({{unit.pascal_name}}Entity entity : entities) {
+                {%- for validation in requests.remove.validations %}
+                Validate.create({{validation.status_code}}, "{{validation.message}}")
+                        .{{validation.predicate}}({%- for arg in validation.args -%}
+                                {%- if arg is containing('expression') -%}
+                                evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                                {%- elif arg is containing('value') -%}
+                                {{value}}
+                                {%- elif arg is containing('path') -%}
+                                {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                                {%- endif -%}
+                                {%- if not loop.last -%}, {% endif -%}
+                        {%- endfor %});
+                {%- endfor %}
+        }
+        {%- endif %}
+
+        Collection<{{resource.pascal_name}}Model> removed = entities
+                .stream()
+                .map(entity -> conversionService.convert(entity, {{resource.pascal_name}}Model.class))
+                .toList();
+
+        {{unit.camel_name}}Repository.deleteAll(entities);
+
+        return {{resource.pascal_name}}Response.RemoveAll
+            .builder()
+            .removed(removed)
+            .build();
+    }
+    {%- endif %}
+
     {%- if projection.actions.by_method.update %}
     {# Blank Line #}
     @Transactional
@@ -264,9 +331,7 @@ public class {{resource.pascal_name}}Service {
 
         {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
                 .findOne(specification)
-                .orElseThrow(() -> {
-                        throw Validate.create(400, "Entity does not exist").buildError();
-                });
+                .orElseThrow(() -> Validate.create(400, "Entity does not exist").buildError());
 
         {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
         {# Blank line -#}

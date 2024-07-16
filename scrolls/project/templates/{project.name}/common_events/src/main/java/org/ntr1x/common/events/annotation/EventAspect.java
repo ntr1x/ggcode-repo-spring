@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -73,10 +74,6 @@ public class EventAspect {
 
             if (isEnabled != null && isEnabled) {
 
-                Object payload = EXPRESSION_PARSER
-                        .parseExpression(annotation.payloadEl())
-                        .getValue(evaluationContext, Object.class);
-
                 CloudEventRoute.CloudEventRouteBuilder routeBuilder = CloudEventRoute.builder();
 
                 Optional.of(annotation.topic())
@@ -99,7 +96,21 @@ public class EventAspect {
                         .kafkaTemplate(cloudEventKafkaTemplate)
                         .build();
 
-                template.send(payload, route);
+                if (annotation.unwind()) {
+                    Collection<?> payloadEntries = EXPRESSION_PARSER
+                            .parseExpression(annotation.payloadEl())
+                            .getValue(evaluationContext, Collection.class);
+
+                    for (Object payload : payloadEntries) {
+                        template.send(payload, route);
+                    }
+                } else {
+                    Object payload = EXPRESSION_PARSER
+                            .parseExpression(annotation.payloadEl())
+                            .getValue(evaluationContext, Object.class);
+
+                    template.send(payload, route);
+                }
             }
 
             return result;

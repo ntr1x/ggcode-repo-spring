@@ -235,6 +235,9 @@ units.unit_events_dispatch = Unit:from(modules.service_events, "public.dispatch"
 units.unit_events_dispatch_type = Unit:from(modules.service_events, "public.dispatch_type")
 units.unit_events_dispatch_status = Unit:from(modules.service_events, "public.dispatch_status")
 units.unit_events_customer_ref = Unit:from(modules.service_events, "public.customer")
+units.unit_events_template = Unit:from(modules.service_events, "public.template")
+units.unit_events_template_type = Unit:from(modules.service_events, "public.template_type")
+units.unit_events_template_shape = Unit:from(modules.service_events, "public.template_shape")
 
 units.unit_events_event:with_columns {
   PK:uuid 'id',
@@ -296,6 +299,7 @@ units.unit_events_dispatch:with_columns {
   Prop:uuid 'subscription_id',
   Prop:int 'type_id',
   Prop:int 'status_id',
+  Prop:int 'template_type_id',
   Prop:datetime 'created_at',
   Prop:datetime 'updated_at',
   Prop:jsonb('payload')
@@ -306,6 +310,7 @@ units.unit_events_dispatch:with_columns {
   Ref:one { name = 'subscription', column = 'subscription_id', unit = units.unit_events_subscription },
   Ref:one { name = 'type', column = 'type_id', unit = units.unit_events_dispatch_type },
   Ref:one { name = 'status', column = 'status_id', unit = units.unit_events_dispatch_status },
+  Ref:one { name = 'template_type', column = 'template_type_id', unit = units.unit_events_template_type },
 }
 
 units.unit_events_dispatch_type:with_columns {
@@ -327,6 +332,31 @@ units.unit_events_customer_ref:with_columns {
   Prop:text 'name',
   Prop:text 'surname',
   Prop:text 'patronymic',
+}
+
+units.unit_events_template:with_columns {
+  PK:uuid 'id',
+  Prop:int 'type_id',
+  Prop:int 'shape_id',
+  Prop:text 'name',
+  Prop:jsonb('payload')
+    :with_column_definition('jsonb')
+    :with_user_type('io.hypersistence.utils.hibernate.type.json.JsonBinaryType')
+    :with_lob(true),
+  Ref:one { name = 'type', column = 'type_id', unit = units.unit_events_template_type },
+  Ref:one { name = 'shape', column = 'shape_id', unit = units.unit_events_template_shape },
+}
+
+units.unit_events_template_type:with_columns {
+  PK:int 'id',
+  Prop:text 'name',
+  Prop:text 'description',
+}
+
+units.unit_events_template_shape:with_columns {
+  PK:int 'id',
+  Prop:text 'name',
+  Prop:text 'description',
 }
 
 units.unit_payments_basket = Unit:from(modules.service_payments, "public.basket")
@@ -533,6 +563,34 @@ units.unit_gateway_events_dispatch:with_columns {
     :with_column_definition('jsonb')
     :with_user_type('io.hypersistence.utils.hibernate.type.json.JsonBinaryType')
     :with_lob(true),
+}
+
+units.unit_structure_network = Unit:from(modules.service_structure, "public.network")
+units.unit_structure_network_type = Unit:from(modules.service_structure, "public.network_type")
+units.unit_structure_shop_ref = Unit:from(modules.service_structure, "public.shop")
+
+units.unit_structure_network:with_columns {
+  PK:uuid 'id',
+  Prop:text 'name',
+  Prop:text 'password',
+  Prop:boolean 'hidden',
+  Prop:uuid 'shop_id',
+  Prop:datetime 'created_at',
+  Prop:datetime 'updated_at',
+  Ref:one { name = 'type', column = 'type_id', unit = units.unit_structure_network_type },
+  Ref:one { name = 'shop', column = 'shop_id', unit = units.unit_structure_shop_ref },
+}
+
+units.unit_structure_shop_ref:with_columns {
+  PK:uuid 'id',
+  Prop:text 'name',
+  Prop:text 'description'
+}
+
+units.unit_structure_network_type:with_columns {
+  PK:int 'id',
+  Prop:text 'name',
+  Prop:text 'description',
 }
 
 return units

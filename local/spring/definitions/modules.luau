@@ -9,13 +9,30 @@ modules.assembly_web = Module
   :from(poms.pom, 'assembly', 'assembly_web')
   :with_profile('local', profiles.profile_local_with_client:copy():with_port(8080))
 
+modules.shared_api = Module
+  :from(poms.pom, 'lib', 'shared_api')
+  :with_plugins {
+    'common_events'
+  }
+
+modules.service_structure = Module
+  :from(poms.pom, 'web', 'service_structure')
+  :with_profile('local', profiles.profile_local:copy():with_port(8081))
+  :with_plugins {
+    'common_jpa',
+    'common_web',
+    'common_events',
+    'shared_api'
+  }
+
 modules.service_catalog = Module
   :from(poms.pom, 'web', 'service_catalog')
   :with_profile('local', profiles.profile_local:copy():with_port(8082))
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.service_profile = Module
@@ -24,7 +41,8 @@ modules.service_profile = Module
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.service_events = Module
@@ -34,7 +52,8 @@ modules.service_events = Module
     'common_jpa',
     'common_web',
     'common_ws',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.service_payments = Module
@@ -43,7 +62,8 @@ modules.service_payments = Module
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.service_security = Module
@@ -51,7 +71,8 @@ modules.service_security = Module
   :with_profile('local', profiles.profile_local_with_client:copy():with_port(8086))
   :with_plugins {
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.gateway_payments = Module
@@ -60,7 +81,8 @@ modules.gateway_payments = Module
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.gateway_profile = Module
@@ -69,7 +91,8 @@ modules.gateway_profile = Module
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 modules.gateway_events = Module
@@ -78,7 +101,8 @@ modules.gateway_events = Module
   :with_plugins {
     'common_jpa',
     'common_web',
-    'common_events'
+    'common_events',
+    'shared_api'
   }
 
 return modules

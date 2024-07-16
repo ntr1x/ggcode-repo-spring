@@ -16,11 +16,15 @@ import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Requ
 import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
 
 import org.ntr1x.common.api.views.Views;
+
 import org.springdoc.core.annotations.ParameterObject;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.Collection;
 
 @RestController
 @Tag(name = "{{resource.title}}"{% if resource.description | defined %}, description = "{{resource.description}}"{% endif %})
@@ -67,6 +71,26 @@ public class {{resource.pascal_name}}Controller {
             @RequestBody @Valid {{resource.pascal_name}}Request.Id key
     ) {
         return {{resource.camel_name}}Service.remove(context, key);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.remove %}
+    {# Blank line #}
+    {% if projection.actions.by_method.remove.route is defined -%}
+    @PostMapping{% if projection.actions.by_method.remove.route | defined %}("{{projection.actions.by_method.remove.route}}"){% endif %}
+    {%- else -%}
+    @PostMapping("/removeAll")
+    {%- endif -%}
+    {%- if projection.actions.by_method.remove.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.remove.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Remove.class)
+    public {{resource.pascal_name}}Response.RemoveAll removeAll(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid Collection<{{resource.pascal_name}}Request.Id> keys
+    ) {
+        return {{resource.camel_name}}Service.removeAll(context, keys);
     }
     {%- endif %}
 

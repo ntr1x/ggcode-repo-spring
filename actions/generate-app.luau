@@ -32,6 +32,8 @@ end
 for _, item in modules do
   if item.kind == 'web' then
     ggcode.generate "@/module_web" { target = '@app', variables = item:unwrap() }
+  elseif item.kind == 'lib' then
+    ggcode.generate "@/module_lib" { target = '@app', variables = item:unwrap() }
   elseif item.kind == 'gateway' then
     ggcode.generate "@/module_web" { target = '@app', variables = item:unwrap() }
   elseif item.kind == 'security' then

@@ -74,7 +74,7 @@ function Listener:unwrap_listener()
     id = self.id,
     container_factory = self.container_factory,
     topic_pattern = self.topic_pattern or self.name,
-    group_id = self.group_id or self.module.name,
+    group_id = self.group_id or self.module.name .. '.' .. self.name,
     client_id_prefix = self.client_id_prefix,
     concurrency = self.concurrency,
     batch = self.batch,

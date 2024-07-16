@@ -24,6 +24,9 @@ statements.ddl_events_subscription_type = DDL:from(projects.project_ddl, units.u
 statements.ddl_events_dispatch = DDL:from(projects.project_ddl, units.unit_events_dispatch.entity)
 statements.ddl_events_dispatch_type = DDL:from(projects.project_ddl, units.unit_events_dispatch_type.entity)
 statements.ddl_events_dispatch_status = DDL:from(projects.project_ddl, units.unit_events_dispatch_status.entity)
+statements.ddl_events_template = DDL:from(projects.project_ddl, units.unit_events_template.entity)
+statements.ddl_events_template_type = DDL:from(projects.project_ddl, units.unit_events_template_type.entity)
+statements.ddl_events_template_shape = DDL:from(projects.project_ddl, units.unit_events_template_shape.entity)
 
 -- Catalog
 
@@ -55,5 +58,10 @@ statements.ddl_payments_order_discount = DDL:from(projects.project_ddl, units.un
 statements.ddl_payments_payment_status = DDL:from(projects.project_ddl, units.unit_payments_payment_status.entity)
 statements.ddl_payments_payment_type = DDL:from(projects.project_ddl, units.unit_payments_payment_type.entity)
 statements.ddl_payments_payment = DDL:from(projects.project_ddl, units.unit_payments_payment.entity)
+
+-- Structure
+
+statements.ddl_structure_network = DDL:from(projects.project_ddl, units.unit_structure_network.entity)
+statements.ddl_structure_network_type = DDL:from(projects.project_ddl, units.unit_structure_network_type.entity)
 
 return statements

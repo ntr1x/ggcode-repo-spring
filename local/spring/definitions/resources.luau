@@ -131,6 +131,26 @@ resources.resource_system_events_dispatch_status = Resource
     :from(projections.projection_system_with_sequence, units.unit_events_dispatch_status)
     :with_title("Dispatch Statuses")
 
+resources.resource_system_events_template = Resource
+    :from(projections.projection_system, units.unit_events_template)
+    :with_title("Templates")
+
+resources.resource_system_events_template_type = Resource
+    :from(projections.projection_system_with_sequence, units.unit_events_template_type)
+    :with_title("Template Types")
+
+resources.resource_system_events_template_content_type = Resource
+    :from(projections.projection_system_with_sequence, units.unit_events_template_shape)
+    :with_title("Template Shapes")
+
+resources.resource_system_network = Resource
+    :from(projections.projection_system, units.unit_structure_network)
+    :with_title("Networks")
+
+resources.resource_system_network_type = Resource
+    :from(projections.projection_system_with_sequence, units.unit_structure_network_type)
+    :with_title("Network Types")
+
 -- Profile resources
 
 resources.resource_profile_payments_basket = Resource
