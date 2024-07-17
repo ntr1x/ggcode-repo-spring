@@ -153,6 +153,10 @@ resources.resource_system_network_type = Resource
 
 -- Profile resources
 
+resources.resource_profile_events_subscription = Resource
+    :from(projections.projection_profile, units.unit_events_subscription)
+    :with_title("Subscriptions")
+
 resources.resource_profile_payments_basket = Resource
     :from(projections.projection_profile, units.unit_payments_basket)
     :with_title("Basket")

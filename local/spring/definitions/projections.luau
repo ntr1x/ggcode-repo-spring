@@ -64,7 +64,9 @@ projections.projection_profile = Projection
     Action:create("isAuthenticated()"):with_rules {
       Action.Override:from_value("id", "generatorService.randomUUID()");
     };
-    Action:remove "isAuthenticated()";
+    Action:remove("isAuthenticated()"):with_rules {
+      Action.Validate:equals('entity.customer_id', 'context.customer_id'),
+    };
     Action:delete "isAuthenticated()";
     Action:update "isAuthenticated()";
     Action:replace("isAuthenticated()"):with_rules {
