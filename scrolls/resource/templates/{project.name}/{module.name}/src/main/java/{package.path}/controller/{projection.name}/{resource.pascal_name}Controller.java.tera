@@ -36,7 +36,7 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.create %}
     {# Blank line #}
-    {% if projection.actions.by_method.create.route is defined -%}
+    {% if projection.actions.by_method.create.route is defined and projection.actions.by_method.create.route != '' -%}
     @PostMapping{% if projection.actions.by_method.create.route is defined %}("{{projection.actions.by_method.create.route}}"){% endif %}
     {%- else -%}
     @PostMapping
@@ -56,7 +56,7 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.remove %}
     {# Blank line #}
-    {% if projection.actions.by_method.remove.route is defined -%}
+    {% if projection.actions.by_method.remove.route is defined and projection.actions.by_method.remove.route != '' -%}
     @PostMapping{% if projection.actions.by_method.remove.route is defined %}("{{projection.actions.by_method.remove.route}}"){% endif %}
     {%- else -%}
     @PostMapping("/remove")
@@ -76,7 +76,7 @@ public class {{resource.pascal_name}}Controller {
 
     {%- if projection.actions.by_method.remove %}
     {# Blank line #}
-    {% if projection.actions.by_method.remove.route is defined -%}
+    {% if projection.actions.by_method.remove.route is defined and projection.actions.by_method.remove.route != '' -%}
     @PostMapping{% if projection.actions.by_method.remove.route is defined %}("{{projection.actions.by_method.remove.route}}"){% endif %}
     {%- else -%}
     @PostMapping("/removeAll")
@@ -97,7 +97,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.update %}
     {# Blank line #}
     {% if projection.actions.by_method.update.route is defined -%}
-    @PutMapping{% if projection.actions.by_method.update.route is defined %}("{{projection.actions.by_method.update.route}}"){% endif %}
+    @PutMapping{% if projection.actions.by_method.update.route is defined and projection.actions.by_method.update.route != '' %}("{{projection.actions.by_method.update.route}}"){% endif %}
     {%- else -%}
     @PutMapping("/update")
     {%- endif -%}
@@ -117,7 +117,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.upsert %}
     {# Blank line #}
     {% if projection.actions.by_method.upsert.route is defined -%}
-    @PutMapping{% if projection.actions.by_method.upsert.route is defined %}("{{projection.actions.by_method.upsert.route}}"){% endif %}
+    @PutMapping{% if projection.actions.by_method.upsert.route is defined and projection.actions.by_method.upsert.route != '' %}("{{projection.actions.by_method.upsert.route}}"){% endif %}
     {%- else -%}
     @PutMapping("/upsert")
     {%- endif -%}
@@ -137,7 +137,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.delete %}
     {# Blank line #}
     {% if projection.actions.by_method.delete.route is defined -%}
-    @DeleteMapping{% if projection.actions.by_method.delete.route is defined %}("{{projection.actions.by_method.delete.route}}"){% endif %}
+    @DeleteMapping{% if projection.actions.by_method.delete.route is defined and projection.actions.by_method.delete.route != '' %}("{{projection.actions.by_method.delete.route}}"){% endif %}
     {%- else -%}
     @DeleteMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- endif -%}
@@ -164,7 +164,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.replace %}
     {# Blank line #}
     {% if projection.actions.by_method.replace.route is defined -%}
-    @PutMapping{% if projection.actions.by_method.replace.route is defined %}("{{projection.actions.by_method.replace.route}}"){% endif %}
+    @PutMapping{% if projection.actions.by_method.replace.route is defined and projection.actions.by_method.replace.route != '' %}("{{projection.actions.by_method.replace.route}}"){% endif %}
     {%- else -%}
     @PutMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- endif -%}
@@ -192,7 +192,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.select %}
     {# Blank line #}
     {% if projection.actions.by_method.select.route is defined -%}
-    @PostMapping{% if projection.actions.by_method.select.route is defined %}("{{projection.actions.by_method.select.route}}"){% endif %}
+    @PostMapping{% if projection.actions.by_method.select.route is defined and projection.actions.by_method.select.route != '' %}("{{projection.actions.by_method.select.route}}"){% endif %}
     {%- else -%}
     @PostMapping("/select")
     {%- endif -%}
@@ -213,7 +213,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.get %}
     {# Blank line #}
     {% if projection.actions.by_method.get.route is defined -%}
-    @GetMapping{% if projection.actions.by_method.get.route is defined %}("{{projection.actions.by_method.get.route}}"){% endif %}
+    @GetMapping{% if projection.actions.by_method.get.route is defined and projection.actions.by_method.get.route != '' %}("{{projection.actions.by_method.get.route}}"){% endif %}
     {%- else -%}
     @GetMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
     {%- endif -%}
@@ -240,7 +240,7 @@ public class {{resource.pascal_name}}Controller {
     {%- if projection.actions.by_method.find %}
     {# Blank line #}
     {% if projection.actions.by_method.find.route is defined -%}
-    @GetMapping{% if projection.actions.by_method.find.route is defined %}("{{projection.actions.by_method.find.route}}"){% endif %}
+    @GetMapping{% if projection.actions.by_method.find.route is defined and projection.actions.by_method.find.route != '' %}("{{projection.actions.by_method.find.route}}"){% endif %}
     {%- else -%}
     @GetMapping("/find")
     {%- endif -%}
