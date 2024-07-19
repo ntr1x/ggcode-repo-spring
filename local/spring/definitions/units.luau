@@ -574,6 +574,7 @@ units.unit_structure_network:with_columns {
   Prop:text 'name',
   Prop:text 'password',
   Prop:boolean 'hidden',
+  Prop:int 'type_id',
   Prop:uuid 'shop_id',
   Prop:datetime 'created_at',
   Prop:datetime 'updated_at',
