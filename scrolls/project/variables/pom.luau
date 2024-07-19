@@ -27,7 +27,7 @@
       { group_id = "io.swagger.core.v3", artifact_id = "swagger-annotations", version = "2.2.20" },
       { group_id = "org.springdoc", artifact_id = "springdoc-openapi-starter-webmvc-api", version = "2.3.0" },
       { group_id = "com.mysql", artifact_id = "mysql-connector-j", version = "8.3.0" },
-      { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.2.19" },
+      { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.3.3" },
       { group_id = "io.vavr", artifact_id = "vavr", version = "${vavr.version}" },
       { group_id = "net.logstash.logback", artifact_id = "logstash-logback-encoder", version = "${logstash.logback.version}" },
       { group_id = "io.cloudevents", artifact_id = "cloudevents-spring", version = "${cloudevents.version}" },

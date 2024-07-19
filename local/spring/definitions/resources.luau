@@ -153,7 +153,7 @@ resources.resource_system_network_type = Resource
 
 resources.resource_system_guide = Resource
     :from(projections.projection_system, units.unit_structure_guide)
-    :with_title("Networks")
+    :with_title("Guides")
 
 resources.resource_system_guide_type = Resource
     :from(projections.projection_system, units.unit_structure_guide_subject)

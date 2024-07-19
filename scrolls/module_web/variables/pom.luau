@@ -5,6 +5,6 @@
     artifact_id = "api",
   },
   dependencies = {
-    { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.2.19" },
+    { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.3.3" },
   }
 }
