@@ -151,6 +151,14 @@ resources.resource_system_network_type = Resource
     :from(projections.projection_system_with_sequence, units.unit_structure_network_type)
     :with_title("Network Types")
 
+resources.resource_system_guide = Resource
+    :from(projections.projection_system, units.unit_structure_guide)
+    :with_title("Networks")
+
+resources.resource_system_guide_type = Resource
+    :from(projections.projection_system, units.unit_structure_guide_subject)
+    :with_title("Guide Subjects")
+
 -- Profile resources
 
 resources.resource_profile_events_subscription = Resource

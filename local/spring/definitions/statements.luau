@@ -63,5 +63,7 @@ statements.ddl_payments_payment = DDL:from(projects.project_ddl, units.unit_paym
 
 statements.ddl_structure_network = DDL:from(projects.project_ddl, units.unit_structure_network.entity)
 statements.ddl_structure_network_type = DDL:from(projects.project_ddl, units.unit_structure_network_type.entity)
+statements.ddl_structure_guide = DDL:from(projects.project_ddl, units.unit_structure_guide.entity)
+statements.ddl_structure_guide_subject = DDL:from(projects.project_ddl, units.unit_structure_guide_subject.entity)
 
 return statements
