@@ -1,13 +1,13 @@
-package com.example.service.security.service.open;
+package {{package.name}}.service.open;
 
-import com.example.service.security.config.ServiceSecurityAppOpenidConfig;
-import com.example.service.security.model.PrincipalModel;
-import com.example.service.security.property.AppOpenidClientProperty;
-import com.example.service.security.request.open.OpenSecurityRequest;
-import com.example.service.security.response.open.OpenSecurityResponse;
+import {{package.name}}.model.PrincipalModel;
+import {{package.name}}.request.open.OpenSecurityRequest;
+import {{package.name}}.response.open.OpenSecurityResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.ntr1x.common.security.config.OpenidConfig;
+import org.ntr1x.common.security.property.OpenidClientProperty;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,12 +35,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OpenSecurityService {
 
-    private final ServiceSecurityAppOpenidConfig serviceSecurityAppOpenidConfig;
+    private final OpenidConfig openidConfig;
     private final ConversionService conversionService;
     private final JwtDecoder jwtDecoder;
 
     public OpenSecurityResponse.Auth auth(OpenSecurityRequest.Auth authRequest) {
-        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+        OpenidClientProperty config = openidConfig.getClient();
 
         String redirectUrl = Optional
                 .ofNullable(authRequest.getRedirectUri())
@@ -63,7 +63,7 @@ public class OpenSecurityService {
     }
 
     public OpenSecurityResponse.Refresh refresh(OpenSecurityRequest.Refresh refreshRequest) {
-        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+        OpenidClientProperty config = openidConfig.getClient();
 
         MultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
 
@@ -101,14 +101,14 @@ public class OpenSecurityService {
     }
 
     public OpenSecurityResponse.Revoke revoke(OpenSecurityRequest.Revoke revokeRequest) {
-        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+        OpenidClientProperty config = openidConfig.getClient();
 
         Mono<String> revokeAccessToken = Optional
                 .ofNullable(revokeRequest.getAccessToken())
                 .map(token -> {
                     MultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
 
-                    bodyValues.add("client_id", serviceSecurityAppOpenidConfig.getClient().getClientId());
+                    bodyValues.add("client_id", openidConfig.getClient().getClientId());
                     bodyValues.add("client_secret", config.getClientSecret());
                     bodyValues.add("token", revokeRequest.getAccessToken());
                     bodyValues.add("token_type_hint", "access_token");
@@ -160,7 +160,7 @@ public class OpenSecurityService {
     }
 
     public OpenSecurityResponse.Callback callback(OpenSecurityRequest.Callback callbackRequest) {
-        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+        OpenidClientProperty config = openidConfig.getClient();
 
         MultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
 
@@ -203,7 +203,7 @@ public class OpenSecurityService {
     }
 
     public OpenSecurityResponse.SignIn signIn(OpenSecurityRequest.SignIn signInRequest) {
-        AppOpenidClientProperty config = serviceSecurityAppOpenidConfig.getClient();
+        OpenidClientProperty config = openidConfig.getClient();
 
         MultiValueMap<String, String> bodyValues = new LinkedMultiValueMap<>();
 

@@ -1,0 +1,3 @@
+name: service_uploads
+app_class: ServiceUploadsApplication
+suite_class: ServiceUploadsSuite

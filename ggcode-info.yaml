@@ -13,6 +13,8 @@ scrolls:
   path: scrolls/module_lib
 - name: module_security
   path: scrolls/module_security
+- name: module_uploads
+  path: scrolls/module_uploads
 - name: assembly
   path: scrolls/assembly
 - name: docker

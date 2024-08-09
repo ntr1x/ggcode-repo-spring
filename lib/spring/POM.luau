@@ -7,7 +7,7 @@ local POM = {
   artifact_id = nil,
   version = '1.0-SNAPSHOT',
   parent = nil,
-  modules = {},
+  modules = nil,
 }
 
 function POM:new(o)

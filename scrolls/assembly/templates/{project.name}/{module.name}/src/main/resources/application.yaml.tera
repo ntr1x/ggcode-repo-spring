@@ -12,6 +12,8 @@ spring:
       - optional:classpath:shared-datasource.yaml
       - optional:classpath:shared-security.yaml
       - optional:classpath:shared-openid-client.yaml
+      - optional:classpath:shared-minio-client.yaml
+      - classpath:{{module.name}}.yaml
 
 springdoc:
   api:

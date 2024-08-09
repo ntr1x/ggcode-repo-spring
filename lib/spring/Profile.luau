@@ -29,13 +29,13 @@ function Profile:copy()
   }))
 end
 
-function Profile:with_datasource(url: string, username: string, password: string)
+function Profile:with_datasource(datasource: table)
   self.config.spring = self.config.spring or Meta:table {}
 
   self.config.spring.datasource = {
-    url = url,
-    username = username,
-    password = password,
+    url = datasource.url,
+    username = datasource.username,
+    password = datasource.password,
   }
   return self
 end
@@ -68,6 +68,19 @@ function Profile:with_app_openid_client(client: table)
     ["client-id"] = client.client_id,
     ["client-secret"] = client.client_secret,
     ["redirect-uri"] = client.redirect_uri
+  }
+
+  return self
+end
+
+function Profile:with_app_minio_client(client: table)
+  self.config.app = self.config.app or Meta:table {}
+  self.config.app.minio = self.config.app.minio or Meta:table {}
+
+  self.config.app.minio.client = {
+    ["endpoint"] = client.endpoint,
+    ["access-key"] = client.access_key,
+    ["secret-key"] = client.secret_key,
   }
 
   return self

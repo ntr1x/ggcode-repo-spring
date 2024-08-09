@@ -1,0 +1,12 @@
+app:
+  minio:
+    client:
+      endpoint: http://env-minio:9000
+#      accessKey: CHANGE_ME
+#      secretKey: CHANGE_ME
+#    buckets:
+#      - name: docs
+#      - name: images
+#        uploadPolicy:
+#          contentType: image/
+#          contentLength: 10M

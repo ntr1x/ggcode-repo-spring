@@ -6,11 +6,11 @@ local Module = {
   parent = nil,
   name = nil,
   kind = nil,
-  pom = nil,
   database = nil,
   profiles = nil,
   plugins = nil,
   configs = nil,
+  dependencies = nil,
 }
 
 function Module:new(o)
@@ -26,10 +26,10 @@ function Module:from(parent: POM, kind: string, name: string)
     name = name,
     kind = kind,
     database = nil,
-    pom = nil,
     profiles = Meta:array {},
     plugins = Meta:array {},
     configs = Meta:array {},
+    dependencies = Meta:array {},
   })
 end
 
@@ -47,11 +47,6 @@ function Module:with_profile(name: string, profile: table)
   return self
 end
 
-function Module:with_pom(pom: POM)
-  self.pom = pom
-  return self
-end
-
 function Module:with_plugins(plugins: table)
   plugins = plugins or Meta:array {}
   for _, name in plugins do
@@ -64,6 +59,14 @@ function Module:with_configs(configs: table)
   configs = configs or Meta:array {}
   for _, name in configs do
     self.configs[#self.configs + 1] = name
+  end
+  return self
+end
+
+function Module:with_dependency(dependencies: table)
+  dependencies = dependencies or Meta:array {}
+  for _, dependency in dependencies do
+    self.dependencies[#self.dependencies + 1] = name
   end
   return self
 end
@@ -85,13 +88,12 @@ function Module:unwrap_profiles()
   return profiles
 end
 
+
 function Module:unwrap_pom()
-  if self.pom ~= nil then
-    return self.pom:unwrap_pom()
-  end
   return {
     artifact_id = self.name,
-    parent = self.parent:unwrap_pom()
+    parent = self.parent:unwrap_pom(),
+    dependencies = self.dependencies,
   }
 end
 

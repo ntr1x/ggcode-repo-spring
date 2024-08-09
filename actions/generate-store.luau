@@ -38,6 +38,8 @@ for _, item in modules do
     ggcode.generate "@/module_web" { target = '@store', variables = item:unwrap() }
   elseif item.kind == 'security' then
     ggcode.generate "@/module_security" { target = '@store', variables = item:unwrap() }
+  elseif item.kind == 'uploads' then
+    ggcode.generate "@/module_uploads" { target = '@store', variables = item:unwrap() }
   end
 end
 

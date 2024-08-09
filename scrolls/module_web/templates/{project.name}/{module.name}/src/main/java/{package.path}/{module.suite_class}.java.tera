@@ -22,6 +22,9 @@ import org.springframework.context.annotation.Import;
 {%- if plugins is containing('common_jpa') %}
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 {%- endif %}
+{%- if plugins is containing('common_security') %}
+import org.ntr1x.common.security.config.OpenidConfig;
+{%- endif %}
 
 @Configuration
 @Import({
@@ -39,6 +42,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         {%- if plugins is containing('common_events') %}
         CloudEventsKafkaConfig.class,
         CloudEventsBeanConfig.class,
+        {%- endif %}
+        {%- if plugins is containing('common_security') %}
+        OpenidConfig.class,
         {%- endif %}
         {%- for config in configs %}
         {{config}}.class,

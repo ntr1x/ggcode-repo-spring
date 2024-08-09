@@ -1,6 +1,6 @@
-package com.example.service.security.converter;
+package {{package.name}}.converter;
 
-import com.example.service.security.model.PrincipalModel;
+import {{package.name}}.model.PrincipalModel;
 import lombok.RequiredArgsConstructor;
 import org.ntr1x.common.api.component.AppConverter;
 import org.ntr1x.common.web.security.JwtAuthoritiesExtractor;

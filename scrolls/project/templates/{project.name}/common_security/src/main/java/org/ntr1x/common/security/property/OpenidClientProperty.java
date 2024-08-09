@@ -1,7 +1,6 @@
-package {{package.name}}.property;
+package org.ntr1x.common.security.property;
 
 import jakarta.validation.constraints.NotEmpty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppOpenidClientProperty {
+public class OpenidClientProperty {
     @NotEmpty
     private String issuerUri;
     @NotEmpty

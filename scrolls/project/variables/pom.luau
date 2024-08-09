@@ -17,7 +17,8 @@
     ["commons-text.version"] = "1.12.0",
     ["commons-beanutils.version"] = "1.9.4",
     ["hypersistence.version"] = "3.7.4",
-    ["vavr.version"] = "0.10.4"
+    ["vavr.version"] = "0.10.4",
+    ["minio.version"] = "8.5.11"
   },
   dependency_management = {
     dependencies = {
@@ -28,6 +29,7 @@
       { group_id = "org.springdoc", artifact_id = "springdoc-openapi-starter-webmvc-api", version = "2.3.0" },
       { group_id = "com.mysql", artifact_id = "mysql-connector-j", version = "8.3.0" },
       { group_id = "org.postgresql", artifact_id = "postgresql", version = "42.3.3" },
+      { group_id = "io.minio", artifact_id = "minio", version = "${minio.version}" },
       { group_id = "io.vavr", artifact_id = "vavr", version = "${vavr.version}" },
       { group_id = "net.logstash.logback", artifact_id = "logstash-logback-encoder", version = "${logstash.logback.version}" },
       { group_id = "io.cloudevents", artifact_id = "cloudevents-spring", version = "${cloudevents.version}" },
