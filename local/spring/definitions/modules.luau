@@ -109,6 +109,7 @@ modules.gateway_profile = Module
 modules.gateway_events = Module
   :from(poms.pom, 'gateway', 'gateway_events')
   :with_profile('local', profiles.profile_local:copy():with_port(8090))
+  :with_dependency('com.google.firebase', 'firebase-admin', '9.1.1')
   :with_plugins {
     'common_jpa',
     'common_web',

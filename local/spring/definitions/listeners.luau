@@ -5,6 +5,8 @@ local modules = require('spring/definitions/modules')
 local listeners = {}
 
 listeners.listener_gateway_events_dispatch = Listener:from(modules.gateway_events, "public_dispatch")
+listeners.listener_gateway_events_update_phone = Listener:from(modules.gateway_events, "update_phone")
+listeners.listener_gateway_events_update_email = Listener:from(modules.gateway_events, "update_email")
 listeners.listener_gateway_payments_payment = Listener:from(modules.gateway_payments, "public_payment")
 listeners.listener_gateway_payments_order = Listener:from(modules.gateway_payments, "public_order")
 listeners.listener_gateway_profile_customer = Listener:from(modules.gateway_profile, "public_customer")

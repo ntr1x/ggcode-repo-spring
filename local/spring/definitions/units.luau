@@ -537,6 +537,7 @@ units.unit_payments_shop_ref:with_columns {
 
 units.unit_gateway_events_subscription = Unit:from(modules.gateway_events, "public.subscription")
 units.unit_gateway_events_dispatch = Unit:from(modules.gateway_events, "public.dispatch")
+units.unit_gateway_events_customer_ref = Unit:from(modules.gateway_events, "public.customer")
 
 units.unit_gateway_events_subscription:with_columns {
   PK:uuid 'id',
@@ -563,6 +564,15 @@ units.unit_gateway_events_dispatch:with_columns {
     :with_column_definition('jsonb')
     :with_user_type('io.hypersistence.utils.hibernate.type.json.JsonBinaryType')
     :with_lob(true),
+}
+
+units.unit_gateway_events_customer_ref:with_columns {
+  PK:uuid 'id',
+  Prop:text 'email',
+  Prop:text 'phone',
+  Prop:text 'name',
+  Prop:text 'surname',
+  Prop:text 'patronymic',
 }
 
 units.unit_structure_network = Unit:from(modules.service_structure, "public.network")

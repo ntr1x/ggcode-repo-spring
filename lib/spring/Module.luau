@@ -1,8 +1,14 @@
 local Meta = require('core/Meta')
+local Wrapper = require('core/Wrapper')
 local case = require('core/util/string/case')
 local POM = require('spring/POM')
+local Dependency = require('spring/module/Dependency')
 
 local Module = {
+  __type = 'Module',
+
+  Dependency = Dependency,
+
   parent = nil,
   name = nil,
   kind = nil,
@@ -31,6 +37,18 @@ function Module:from(parent: POM, kind: string, name: string)
     configs = Meta:array {},
     dependencies = Meta:array {},
   })
+end
+
+function Module:with_rules(children: table)
+  children = children or {}
+
+  for _, child in children do
+    if child.__type == 'Dependency' then
+      self.dependencies[#self.dependencies + 1] = child
+    end
+  end
+
+  return self
 end
 
 function Module:with_database(url: string, username: string, password: string)
@@ -63,11 +81,8 @@ function Module:with_configs(configs: table)
   return self
 end
 
-function Module:with_dependency(dependencies: table)
-  dependencies = dependencies or Meta:array {}
-  for _, dependency in dependencies do
-    self.dependencies[#self.dependencies + 1] = name
-  end
+function Module:with_dependency(group_id: string, artifact_id: string, version: string)
+  self.dependencies[#self.dependencies + 1] = Dependency:from(group_id, artifact_id, version)
   return self
 end
 
@@ -122,6 +137,7 @@ function Module:unwrap()
     },
     database = self.database,
     profiles = self:unwrap_profiles(),
+    dependencies = Wrapper:unwrap_array(self.dependencies),
     plugins = self.plugins,
     configs = self.configs,
   }
