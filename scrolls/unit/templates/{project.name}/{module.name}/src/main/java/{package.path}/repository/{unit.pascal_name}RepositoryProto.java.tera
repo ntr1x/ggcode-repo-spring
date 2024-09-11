@@ -1,0 +1,13 @@
+package {{package.name}}.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.repository.NoRepositoryBean;
+
+import java.util.Optional;
+
+@NoRepositoryBean
+public interface {{unit.pascal_name}}RepositoryProto extends JpaRepository<{{unit.pascal_name}}Entity, {{entity.pk.java_type}}>, JpaSpecificationExecutor<{{unit.pascal_name}}Entity> {
+  <T> Optional<T> findBy{{entity.pk.pascal_name}}({{entity.pk.java_type}} {{entity.pk.camel_name}}, Class<T> type);
+}

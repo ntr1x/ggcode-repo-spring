@@ -1,0 +1,7 @@
+package {{package.name}}.repository;
+
+import org.springframework.stereotype.Repository;
+
+@Repository("{{module.camel_name}}.{{unit.camel_name}}Repository")
+public interface {{unit.pascal_name}}Repository extends {{unit.pascal_name}}RepositoryProto {
+}

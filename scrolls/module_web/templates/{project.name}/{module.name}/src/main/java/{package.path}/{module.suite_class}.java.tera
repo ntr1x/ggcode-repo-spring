@@ -1,0 +1,58 @@
+package {{package.name}};
+
+import {{package.name}}.config.{{module.pascal_name}}Config;
+import org.ntr1x.common.api.config.CommonBeanConfig;
+{%- if plugins is containing('common_events') %}
+import org.ntr1x.common.events.config.CloudEventsBeanConfig;
+import org.ntr1x.common.events.config.CloudEventsKafkaConfig;
+{%- endif %}
+{%- if plugins is containing('common_web') %}
+import org.ntr1x.common.web.config.OpenApiConfig;
+import org.ntr1x.common.web.config.OpenApiSecurityConfig;
+import org.ntr1x.common.web.config.WebMvcConfig;
+import org.ntr1x.common.web.config.WebMvcSecurityConfig;
+{%- endif %}
+{%- if plugins is containing('common_ws') %}
+import org.ntr1x.common.ws.config.WebSocketConfig;
+import org.ntr1x.common.ws.config.WebSocketHubConfig;
+{%- endif %}
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+{%- if plugins is containing('common_jpa') %}
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+{%- endif %}
+{%- if plugins is containing('common_security') %}
+import org.ntr1x.common.security.config.OpenidConfig;
+{%- endif %}
+
+@Configuration
+@Import({
+        CommonBeanConfig.class,
+        {%- if plugins is containing('common_web') %}
+        WebMvcConfig.class,
+        WebMvcSecurityConfig.class,
+        OpenApiConfig.class,
+        OpenApiSecurityConfig.class,
+        {%- endif %}
+        {%- if plugins is containing('common_ws') %}
+        WebSocketConfig.class,
+        WebSocketHubConfig.class,
+        {%- endif %}
+        {%- if plugins is containing('common_events') %}
+        CloudEventsKafkaConfig.class,
+        CloudEventsBeanConfig.class,
+        {%- endif %}
+        {%- if plugins is containing('common_security') %}
+        OpenidConfig.class,
+        {%- endif %}
+        {%- for config in configs %}
+        {{config}}.class,
+        {%- endfor %}
+})
+@ComponentScan(basePackageClasses = {{module.pascal_name}}Config.class)
+{%- if plugins is containing('common_jpa') %}
+@EnableJpaRepositories
+{%- endif %}
+public class {{module.suite_class}} {
+}

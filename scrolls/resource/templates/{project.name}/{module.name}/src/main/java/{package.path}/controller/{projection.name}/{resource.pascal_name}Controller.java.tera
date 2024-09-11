@@ -1,0 +1,259 @@
+package {{package.name}}.controller.{{projection.name}};
+
+import com.fasterxml.jackson.annotation.JsonView;
+
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import jakarta.validation.Valid;
+
+import lombok.RequiredArgsConstructor;
+
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+import {{package.name}}.service.{{projection.name}}.{{resource.pascal_name}}Service;
+import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
+
+import org.ntr1x.common.api.views.Views;
+
+import org.springdoc.core.annotations.ParameterObject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.Collection;
+
+@RestController
+@Tag(name = "{{resource.title}}"{% if resource.description is defined %}, description = "{{resource.description}}"{% endif %})
+@RequestMapping("/{{projection.name}}/{{unit.snake_name}}")
+@RequiredArgsConstructor
+public class {{resource.pascal_name}}Controller {
+
+    private final {{resource.pascal_name}}Service {{resource.camel_name}}Service;
+
+    {%- if projection.actions.by_method.create %}
+    {# Blank line #}
+    {% if projection.actions.by_method.create.route is defined and projection.actions.by_method.create.route != '' -%}
+    @PostMapping{% if projection.actions.by_method.create.route is defined %}("{{projection.actions.by_method.create.route}}"){% endif %}
+    {%- else -%}
+    @PostMapping
+    {%- endif -%}
+    {%- if projection.actions.by_method.create.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.create.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Create.class)
+    public {{resource.pascal_name}}Response.Create create(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid {{resource.pascal_name}}Request.Create request
+    ) {
+        return {{resource.camel_name}}Service.create(context, request);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.remove %}
+    {# Blank line #}
+    {% if projection.actions.by_method.remove.route is defined and projection.actions.by_method.remove.route != '' -%}
+    @PostMapping{% if projection.actions.by_method.remove.route is defined %}("{{projection.actions.by_method.remove.route}}"){% endif %}
+    {%- else -%}
+    @PostMapping("/remove")
+    {%- endif -%}
+    {%- if projection.actions.by_method.remove.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.remove.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Remove.class)
+    public {{resource.pascal_name}}Response.Remove remove(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid {{resource.pascal_name}}Request.Id key
+    ) {
+        return {{resource.camel_name}}Service.remove(context, key);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.remove %}
+    {# Blank line #}
+    {% if projection.actions.by_method.remove.route is defined and projection.actions.by_method.remove.route != '' -%}
+    @PostMapping{% if projection.actions.by_method.remove.route is defined %}("{{projection.actions.by_method.remove.route}}"){% endif %}
+    {%- else -%}
+    @PostMapping("/removeAll")
+    {%- endif -%}
+    {%- if projection.actions.by_method.remove.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.remove.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Remove.class)
+    public {{resource.pascal_name}}Response.RemoveAll removeAll(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid Collection<{{resource.pascal_name}}Request.Id> keys
+    ) {
+        return {{resource.camel_name}}Service.removeAll(context, keys);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.update %}
+    {# Blank line #}
+    {% if projection.actions.by_method.update.route is defined -%}
+    @PutMapping{% if projection.actions.by_method.update.route is defined and projection.actions.by_method.update.route != '' %}("{{projection.actions.by_method.update.route}}"){% endif %}
+    {%- else -%}
+    @PutMapping("/update")
+    {%- endif -%}
+    {%- if projection.actions.by_method.update.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.update.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Update.class)
+    public {{resource.pascal_name}}Response.Update update(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody {{resource.pascal_name}}Request.Update request
+    ) {
+        return {{resource.camel_name}}Service.update(context, request);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.upsert %}
+    {# Blank line #}
+    {% if projection.actions.by_method.upsert.route is defined -%}
+    @PutMapping{% if projection.actions.by_method.upsert.route is defined and projection.actions.by_method.upsert.route != '' %}("{{projection.actions.by_method.upsert.route}}"){% endif %}
+    {%- else -%}
+    @PutMapping("/upsert")
+    {%- endif -%}
+    {%- if projection.actions.by_method.upsert.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.upsert.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Update.class)
+    public {{resource.pascal_name}}Response.Upsert upsert(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid {{resource.pascal_name}}Request.Upsert request
+    ) {
+        return {{resource.camel_name}}Service.upsert(context, request);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.delete %}
+    {# Blank line #}
+    {% if projection.actions.by_method.delete.route is defined -%}
+    @DeleteMapping{% if projection.actions.by_method.delete.route is defined and projection.actions.by_method.delete.route != '' %}("{{projection.actions.by_method.delete.route}}"){% endif %}
+    {%- else -%}
+    @DeleteMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    {%- endif -%}
+    {%- if projection.actions.by_method.delete.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.delete.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Remove.class)
+    public {{resource.pascal_name}}Response.Remove remove(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys.array %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys.array %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.remove(context, recordKey);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.replace %}
+    {# Blank line #}
+    {% if projection.actions.by_method.replace.route is defined -%}
+    @PutMapping{% if projection.actions.by_method.replace.route is defined and projection.actions.by_method.replace.route != '' %}("{{projection.actions.by_method.replace.route}}"){% endif %}
+    {%- else -%}
+    @PutMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    {%- endif -%}
+    {%- if projection.actions.by_method.replace.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.replace.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Replace.class)
+    public {{resource.pascal_name}}Response.Replace replace(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys.array %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}},
+            {%- endfor %}
+            @RequestBody @Valid {{resource.pascal_name}}Request.Replace request
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys.array %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.replace(context, recordKey, request);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.select %}
+    {# Blank line #}
+    {% if projection.actions.by_method.select.route is defined -%}
+    @PostMapping{% if projection.actions.by_method.select.route is defined and projection.actions.by_method.select.route != '' %}("{{projection.actions.by_method.select.route}}"){% endif %}
+    {%- else -%}
+    @PostMapping("/select")
+    {%- endif -%}
+    {%- if projection.actions.by_method.select.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.select.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Select.class)
+    public Page<{{resource.pascal_name}}Model> select(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @RequestBody @Valid {{resource.pascal_name}}Request.Select request,
+            @ParameterObject Pageable pageable
+    ) {
+        return {{resource.camel_name}}Service.select(context, request, pageable);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.get %}
+    {# Blank line #}
+    {% if projection.actions.by_method.get.route is defined -%}
+    @GetMapping{% if projection.actions.by_method.get.route is defined and projection.actions.by_method.get.route != '' %}("{{projection.actions.by_method.get.route}}"){% endif %}
+    {%- else -%}
+    @GetMapping("/i/{% for desc in entity.keys.array %}{{'{' ~ desc.camel_name ~ '}'}}{% if not loop.last %}|{% endif %}{% endfor %}")
+    {%- endif -%}
+    {%- if projection.actions.by_method.get.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.get.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Select.class)
+    public {{resource.pascal_name}}Model get(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            {%- for desc in entity.keys.array %}
+            @PathVariable("{{desc.camel_name}}") {{desc.java_type}} {{desc.camel_name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+    ) {
+        {{resource.pascal_name}}Request.Id recordKey = {{resource.pascal_name}}Request.Id.builder()
+                {%- for desc in entity.keys.array %}
+                .{{desc.camel_name}}({{desc.camel_name}})
+                {%- endfor %}
+                .build();
+        return {{resource.camel_name}}Service.get(context, recordKey);
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.find %}
+    {# Blank line #}
+    {% if projection.actions.by_method.find.route is defined -%}
+    @GetMapping{% if projection.actions.by_method.find.route is defined and projection.actions.by_method.find.route != '' %}("{{projection.actions.by_method.find.route}}"){% endif %}
+    {%- else -%}
+    @GetMapping("/find")
+    {%- endif -%}
+    {%- if projection.actions.by_method.find.role != '' %}
+    @PreAuthorize("{{projection.actions.by_method.find.role}}")
+    @SecurityRequirement(name = "Bearer")
+    {%- endif %}
+    @JsonView(Views.Select.class)
+    public {{resource.pascal_name}}Model find(
+            @Parameter(hidden = true) {{resource.pascal_name}}Request.Context context,
+            @ParameterObject @ModelAttribute @Valid {{resource.pascal_name}}Request.Find request
+    ) {
+        return {{resource.camel_name}}Service.find(context, request);
+    }
+    {%- endif %}
+}

@@ -1,0 +1,3 @@
+name: service_api
+app_class: ServiceApiApplication
+suite_class: ServiceApiSuite

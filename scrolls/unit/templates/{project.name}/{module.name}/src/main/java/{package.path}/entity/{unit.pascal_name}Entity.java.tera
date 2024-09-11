@@ -1,0 +1,67 @@
+package {{package.name}}.entity;
+
+import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.Type;
+
+import java.util.List;
+
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "{{module.pascal_name}}{{unit.pascal_name}}Entity")
+@Table(schema = "{{entity.schema}}", name = "{{entity.table}}")
+public class {{unit.pascal_name}}Entity {
+    {%- for desc in entity.keys.array %}
+    {# Blank line #}
+    @Id
+    @Column(updatable = {{desc.updatable}}{% if desc.column_definition %}, columnDefinition = "{{desc.column_definition}}"{% endif %})
+    private {{desc.java_type}} {{desc.camel_name}};
+    {%- endfor %}
+
+    {%- for desc in entity.columns.array %}
+    {# Blank line #}
+    @Column(name = "{{desc.name}}"{% if desc.column_definition %}, columnDefinition = "{{desc.column_definition}}"{% endif %})
+    {%- if desc.user_type %}
+    @Type({{desc.user_type}}.class)
+    {%- endif %}
+    {%- if desc.is_lob %}
+    @Lob
+    {%- endif %}
+    private {{desc.java_type}} {{desc.camel_name}};
+    {%- endfor %}
+
+    {%- for desc in entity.formulas.array %}
+    {# Blank line #}
+    @Formula("{{desc.formula}}")
+    {%- if desc.user_type %}
+    @Type({{desc.user_type}}.class)
+    {%- endif %}
+    {%- if desc.is_lob %}
+    @Lob
+    {%- endif %}
+    private {{desc.java_type}} {{desc.camel_name}};
+    {%- endfor %}
+
+    {%- if entity.refs | length > 0 -%}
+    {%- for desc in entity.refs.array %}
+    {# Blank line #}
+    {%- if desc.variant == 'one' %}
+    @ManyToOne
+    @JoinColumn(name = "{{desc.column}}", insertable = false, updatable = false)
+    private {{desc.unit.package.name}}.entity.{{desc.unit.pascal_name}}Entity {{desc.camel_name}};
+    {%- elif desc.variant == 'many' %}
+    @OneToMany
+    @JoinColumn(name = "{{desc.column}}")
+    private List<{{desc.unit.package.name}}.entity.{{desc.unit.pascal_name}}Entity> {{desc.camel_name}};
+    {%- endif %}
+    {%- endfor -%}
+    {%- endif %}
+}

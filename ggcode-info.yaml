@@ -1,0 +1,39 @@
+name: spring
+actions:
+- name: generate-store
+  path: actions/generate-store.luau
+- name: test/spring
+  path: actions/test/spring.luau
+scrolls:
+- name: project
+  path: scrolls/project
+- name: module_web
+  path: scrolls/module_web
+- name: module_lib
+  path: scrolls/module_lib
+- name: module_security
+  path: scrolls/module_security
+- name: module_uploads
+  path: scrolls/module_uploads
+- name: assembly
+  path: scrolls/assembly
+- name: docker
+  path: scrolls/docker
+- name: unit
+  path: scrolls/unit
+- name: ddl
+  path: scrolls/ddl
+- name: resource
+  path: scrolls/resource
+- name: exchange
+  path: scrolls/exchange
+- name: listener
+  path: scrolls/listener
+repositories:
+- name: core
+  uri: git@github.com:ntr1x/ggcode-repo-core.git
+targets:
+- name: '@app'
+  path: app
+- name: '@store'
+  path: ../../ggcode-generated/ggcode-generated-store

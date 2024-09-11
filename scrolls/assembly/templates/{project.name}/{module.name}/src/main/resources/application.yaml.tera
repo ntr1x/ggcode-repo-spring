@@ -1,0 +1,22 @@
+server:
+  port: {{service.port}}
+  forward-headers-strategy: framework
+  servlet:
+    context-path: {{service.path}}
+
+spring:
+  application:
+    name: {{module.name}}
+  config:
+    import:
+      - optional:classpath:shared-datasource.yaml
+      - optional:classpath:shared-security.yaml
+      - optional:classpath:shared-openid-client.yaml
+      - optional:classpath:shared-minio-client.yaml
+      - classpath:{{module.name}}.yaml
+
+springdoc:
+  api:
+    title: {{api.title}}
+    description: {{api.description}}
+    version: {{api.version}}

@@ -1,0 +1,46 @@
+package {{package.name}}.converter;
+
+import {{package.name}}.model.PrincipalModel;
+import lombok.RequiredArgsConstructor;
+import org.ntr1x.common.api.component.AppConverter;
+import org.ntr1x.common.web.security.JwtAuthoritiesExtractor;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Component;
+
+import java.net.URISyntaxException;
+import java.util.stream.Collectors;
+
+public interface JwtConverter {
+
+    @RequiredArgsConstructor
+    @Component("serviceSecurity.jwtConverter.toModel")
+    class ToModel implements AppConverter<Jwt, PrincipalModel> {
+        public PrincipalModel convert(Jwt jwt) {
+            try {
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+                converter.setJwtGrantedAuthoritiesConverter(new JwtAuthoritiesExtractor());
+                JwtAuthenticationToken token = (JwtAuthenticationToken) converter.convert(jwt);
+
+                return PrincipalModel
+                        .builder()
+                        .issuer(jwt.getIssuer().toURI())
+                        .subject(jwt.getSubject())
+                        .username(jwt.getClaimAsString("preferred_username"))
+                        .fullName(jwt.getClaimAsString("name"))
+                        .email(jwt.getClaimAsString("email"))
+                        .token(jwt.getTokenValue())
+                        .authorities(token
+                                .getAuthorities()
+                                .stream()
+                                .map(a -> a.getAuthority())
+                                .collect(Collectors.toList()))
+                        .build();
+
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+}

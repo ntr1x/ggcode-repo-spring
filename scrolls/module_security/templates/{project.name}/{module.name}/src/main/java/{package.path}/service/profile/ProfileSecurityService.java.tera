@@ -1,0 +1,7 @@
+package {{package.name}}.service.profile;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProfileSecurityService {
+}

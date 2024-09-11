@@ -1,0 +1,800 @@
+package {{package.name}}.service.{{projection.name}};
+
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import org.ntr1x.common.api.annotation.Event;
+import org.ntr1x.common.api.service.EvaluatorService;
+import org.ntr1x.common.api.service.GeneratorService;
+import org.ntr1x.common.jpa.criteria.SpecificationBuilder;
+import org.ntr1x.common.web.util.Validate;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import {{package.name}}.entity.*;
+import {{package.name}}.repository.{{unit.pascal_name}}Repository;
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+import {{package.name}}.request.{{projection.name}}.{{resource.pascal_name}}Request;
+import {{package.name}}.response.{{projection.name}}.{{resource.pascal_name}}Response;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class {{resource.pascal_name}}Service {
+
+    @Qualifier("{{module.camel_name}}.{{unit.camel_name}}Repository")
+    private final {{unit.pascal_name}}Repository {{unit.camel_name}}Repository;
+    private final EntityManager entityManager;
+    private final ConversionService conversionService;
+    private final EvaluatorService evaluatorService;
+    private final GeneratorService generatorService;
+
+    {%- if projection.actions.by_method.create %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.create | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Create create(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Create request
+    ) {
+        {%- if requests.create.fetches | length %}
+        {% for fetch in requests.create.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.create.validations | length %}
+        {% for validation in requests.create.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = {{unit.pascal_name}}Entity.builder();
+        {# Blank line -#}
+        {% for desc in requests.create.keys.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor -%}
+        {# Blank line #}
+        {% for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor %}
+
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
+
+        entityManager.refresh(entity);
+
+        {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Create
+            .builder()
+            .created(created)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.remove or projection.actions.by_method.delete %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.remove | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Remove remove(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key
+    ) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.get{{entity.pk.pascal_name}}())
+                .orElseThrow();
+
+        {%- if requests.remove.fetches | length %}
+        {% for fetch in requests.remove.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.remove.validations | length %}
+        {% for validation in requests.remove.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        {{unit.camel_name}}Repository.delete(entity);
+
+        return {{resource.pascal_name}}Response.Remove
+            .builder()
+            .removed(removed)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.remove or projection.actions.by_method.delete %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.remove | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %}, unwind = true)
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.RemoveAll removeAll(
+        {{resource.pascal_name}}Request.Context context,
+        Collection<{{resource.pascal_name}}Request.Id> keys
+    ) {
+        Collection<{{unit.pascal_name}}Entity> entities = {{unit.camel_name}}Repository
+                .findAllById(keys.stream().map({{resource.pascal_name}}Request.Id::get{{entity.pk.pascal_name}}).toList());
+
+        {%- if requests.remove.fetches | length %}
+        {% for fetch in requests.remove.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+
+        {%- if requests.remove.validations | length %}
+        {# Blank line #}
+        for ({{unit.pascal_name}}Entity entity : entities) {
+                {%- for validation in requests.remove.validations %}
+                Validate.create({{validation.status_code}}, "{{validation.message}}")
+                        .{{validation.predicate}}({%- for arg in validation.args -%}
+                                {%- if arg is containing('expression') -%}
+                                evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                                {%- elif arg is containing('value') -%}
+                                {{value}}
+                                {%- elif arg is containing('path') -%}
+                                {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                                {%- endif -%}
+                                {%- if not loop.last -%}, {% endif -%}
+                        {%- endfor %});
+                {%- endfor %}
+        }
+        {%- endif %}
+
+        Collection<{{resource.pascal_name}}Model> removed = entities
+                .stream()
+                .map(entity -> conversionService.convert(entity, {{resource.pascal_name}}Model.class))
+                .toList();
+
+        {{unit.camel_name}}Repository.deleteAll(entities);
+
+        return {{resource.pascal_name}}Response.RemoveAll
+            .builder()
+            .removed(removed)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.update %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.update | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Update update(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Update request
+    ) {
+        {%- if requests.update.fetches | length %}
+        {% for fetch in requests.update.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.update.validations | length %}
+        {% for validation in requests.update.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
+                    {%- for desc in requests.update.keys.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withValueMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for f in requests.update.filters %}
+                    {%- if f is containing('value') %}
+                    .withValueMatch("{{f.camel_name}}", {{f.value}})
+                    {%- elif f is containing('expression') %}
+                    .withValueMatch("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class))
+                    {%- elif f is containing('path') %}
+                    .with{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}Match("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                    {%- else %}
+                    {#- Ignore -#}
+                    {%- endif -%}
+                    {%- endfor %}
+                    .build();
+
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findOne(specification)
+                .orElseThrow(() -> Validate.create(400, "Entity does not exist").buildError());
+
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
+        {# Blank line -#}
+        {% for desc in requests.update.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor %}
+
+        entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
+
+        entityManager.refresh(entity);
+
+        {{resource.pascal_name}}Model updated = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Update
+            .builder()
+            .updated(updated)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.upsert %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.upsert | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Upsert upsert(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Upsert request
+    ) {
+        {%- if requests.upsert.fetches | length %}
+        {% for fetch in requests.upsert.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.upsert.validations | length %}
+        {% for validation in requests.upsert.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
+                    {%- for desc in requests.upsert.keys.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withValueMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for f in requests.upsert.filters %}
+                    {%- if f is containing('value') %}
+                    .withValueMatch("{{f.camel_name}}", {{f.value}})
+                    {%- elif f is containing('expression') %}
+                    .withValueMatch("{{f.camel_name}}", evaluatorService.evaluate("{{f.expression}}", java.util.Object.class))
+                    {%- elif f is containing('path') %}
+                    .with{% if f is containing('is_optional') and f.is_optional %}Optional{% else %}Value{% endif %}Match("{{f.camel_name}}", {% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                    {%- else %}
+                    {#- Ignore -#}
+                    {%- endif -%}
+                    {%- endfor %}
+                    .build();
+
+        {{unit.pascal_name}}Entity example = {{unit.pascal_name}}Entity
+                .builder()
+                {%- for desc in requests.upsert.keys.array %}
+                {%- if desc is containing('override') and desc.override is containing('value') %}
+                .{{desc.camel_name}}({{desc.override.value}})
+                {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                .{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}())
+                {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                .{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                {%- elif desc is containing('override') and desc.override.is_hidden %}
+                {#- Ignore -#}
+                {%- else %}
+                .{{desc.camel_name}}(request.get{{desc.pascal_name}}())
+                {%- endif -%}
+                {%- endfor %}
+                {%- for f in requests.upsert.filters %}
+                {%- if f is containing('value') %}
+                .{{f.camel_name}}({{f.value}})
+                {%- elif f is containing('expression') %}
+                .{{f.camel_name}}(evaluatorService.evaluate("{{f.expression}}", {{desc.java_type}}.class))
+                {%- elif f is containing('path') %}
+                .{{f.camel_name}}({% for s in f.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- else %}
+                {#- Ignore -#}
+                {%- endif -%}
+                {%- endfor %}
+                .build();
+
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findOne(specification)
+                .orElse(example);
+
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
+        {# Blank line -#}
+        {% for desc in requests.upsert.columns.array %}
+        {%- if desc is containing('override') and desc.override is containing('value') %}
+        builder.{{desc.camel_name}}({{desc.override.value}});
+        {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+        builder.{{desc.camel_name}}(context.get{{desc.override.context_value.pascal_name}}());
+        {%- elif desc is containing('override') and desc.override is containing('expression') %}
+        builder.{{desc.camel_name}}(evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class));
+        {%- elif desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor %}
+
+        entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
+
+        entityManager.refresh(entity);
+
+        {{resource.pascal_name}}Model updated = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Upsert
+            .builder()
+            .updated(updated)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.replace %}
+    {# Blank Line #}
+    @Transactional
+    {%- for signal in signals.replace | default(value = []) %}
+    @Event(topic = "{{signal.topic}}", type = "{{signal.event_type}}", source = "service:{{module.name}}"{% if signal.payload_el is defined %}, payloadEl = "{{signal.payload_el}}"{% endif %}{% if signal.condition_el is defined %}, conditionEl = "{{signal.condition_el}}"{% endif %})
+    {%- endfor %}
+    public {{resource.pascal_name}}Response.Replace replace(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key,
+        {{resource.pascal_name}}Request.Replace request
+    ) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.get{{entity.pk.pascal_name}}())
+                .orElseThrow();
+
+        {%- if requests.replace.fetches | length %}
+        {% for fetch in requests.replace.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.replace.validations | length %}
+        {% for validation in requests.replace.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        {{resource.pascal_name}}Model removed = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        {{unit.pascal_name}}Entity.{{unit.pascal_name}}EntityBuilder builder = entity.toBuilder();
+        {# Blank line #}
+        {%- for desc in entity.keys.array %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor %}
+        {%- for desc in entity.columns.array %}
+        {%- if projection.context.by_name is not containing(desc.name) %}
+        Optional.ofNullable(request.get{{desc.pascal_name}}())
+                .ifPresent((value) -> builder.{{desc.camel_name}}(value.orElse(null)));
+        {%- endif -%}
+        {%- endfor %}
+
+        entity = {{unit.camel_name}}Repository.saveAndFlush(builder.build());
+
+        entityManager.refresh(entity);
+
+        {{resource.pascal_name}}Model created = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+
+        return {{resource.pascal_name}}Response.Replace
+            .builder()
+            .removed(removed)
+            .created(created)
+            .build();
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.select %}
+    {# Blank Line #}
+    @Transactional
+    public Page<{{resource.pascal_name}}Model> select(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Select request,
+        Pageable pageable
+    ) {
+        {%- if requests.select.fetches | length %}
+        {% for fetch in requests.select.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.select.validations | length %}
+        {% for validation in requests.select.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
+                    {%- for desc in requests.select.keys.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for desc in requests.select.columns.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+
+                    {%- for link in links %}
+                    {%- if link.projection.actions.by_method.select %}
+
+                    {%- for desc in link.requests.select.keys.array %}
+                    {%- if desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalPathMatch("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}")
+                    {%- endif -%}
+                    {%- endfor %}
+
+                    {%- for desc in link.requests.select.columns.array %}
+                    {%- if desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalPathMatch("{{link.link.camel_name}}.{{desc.camel_name}}", request, {{desc.java_type}}.class, "{{link.link.camel_name}}.{{desc.camel_name}}")
+                    {%- endif -%}
+                    {%- endfor %}
+
+                    {%- endif -%}
+                    {%- endfor %}
+                    .withWhereStatements(request.get__where())
+                    .withOrderStatements(request.get__order())
+                    .build();
+
+        return {{unit.camel_name}}Repository
+                .findAll(specification, pageable)
+                .map(item -> conversionService.convert(item, {{resource.pascal_name}}Model.class));
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.get %}
+    {# Blank Line #}
+    @Transactional
+    public {{resource.pascal_name}}Model get(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Id key
+    ) {
+        {{unit.pascal_name}}Entity entity = {{unit.camel_name}}Repository
+                .findById(key.get{{entity.pk.pascal_name}}())
+                .orElseThrow();
+
+        {%- if requests.get.fetches | length %}
+        {% for fetch in requests.get.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {%- endfor %}
+        {%- endif %}
+        {%- if requests.get.validations | length %}
+        {% for validation in requests.get.validations %}
+        Validate.create({{validation.status_code}}, "{{validation.message}}")
+                .{{validation.predicate}}({%- for arg in validation.args -%}
+                        {%- if arg is containing('expression') -%}
+                        evaluatorService.evaluate({{expression}}, java.lang.Object.class)
+                        {%- elif arg is containing('value') -%}
+                        {{value}}
+                        {%- elif arg is containing('path') -%}
+                        {%- for s in arg.path -%}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %}
+                        {%- endif -%}
+                        {%- if not loop.last -%}, {% endif -%}
+                {%- endfor %});
+        {%- endfor %}
+        {%- endif %}
+
+        {{resource.pascal_name}}Model result = conversionService.convert(entity, {{resource.pascal_name}}Model.class);
+        return result;
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.find %}
+    {# Blank Line #}
+    @Transactional
+    public {{resource.pascal_name}}Model find(
+        {{resource.pascal_name}}Request.Context context,
+        {{resource.pascal_name}}Request.Find request
+    ) {
+        {%- for fetch in requests.find.fetches %}
+        {%- if fetch is containing('expression') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, evaluatorService.evaluate({{expression}}, java.lang.Object.class));
+        {%- elif fetch is containing('value') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = entityManager
+                .find({{fetch.unit.pascal_name}}Entity.class, {{fetch.value}});
+        {%- elif fetch is containing('path') %}
+        {{fetch.unit.pascal_name}}Entity {{fetch.camel_name}} = Optional
+                .ofNullable({% for s in fetch.path %}{% if loop.first %}{{s.camel_name}}{% else %}.get{{s.pascal_name}}(){% endif %}{% endfor %})
+                {%- if fetch is containing('is_optional') and fetch.is_optional %}
+                .flatMap(id -> id)
+                {%- endif %}
+                .map(id -> entityManager.find({{fetch.unit.pascal_name}}Entity.class, id))
+                .orElse(null);
+        {%- endif %}
+        {% endfor %}
+
+        Specification<{{unit.pascal_name}}Entity> specification = (root, query, cb) ->
+            SpecificationBuilder
+                    .create(root, query, cb)
+                    {%- for desc in requests.find.keys.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for desc in requests.find.columns.array %}
+                    {%- if desc is containing('override') and desc.override is containing('value') %}
+                    .withValueMatch("{{desc.camel_name}}", {{desc.override.value}})
+                    {%- elif desc is containing('override') and desc.override is containing('context_value') %}
+                    .withValueMatch("{{desc.camel_name}}", context.get{{desc.override.context_value.pascal_name}}())
+                    {%- elif desc is containing('override') and desc.override is containing('expression') %}
+                    .withValueMatch("{{desc.camel_name}}", evaluatorService.evaluate("{{desc.override.expression}}", {{desc.java_type}}.class))
+                    {%- elif desc is containing('override') and desc.override.is_hidden %}
+                    {#- Ignore -#}
+                    {%- else %}
+                    .withOptionalMatch("{{desc.camel_name}}", request.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    .build();
+
+        return {{unit.camel_name}}Repository
+                .findOne(specification)
+                .map(item -> conversionService.convert(item, {{resource.pascal_name}}Model.class))
+                .orElse(null);
+    }
+    {%- endif %}
+}

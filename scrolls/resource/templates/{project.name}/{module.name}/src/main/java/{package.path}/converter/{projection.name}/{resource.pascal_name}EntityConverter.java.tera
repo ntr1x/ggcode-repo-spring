@@ -1,0 +1,51 @@
+package {{package.name}}.converter.{{projection.name}};
+
+import lombok.RequiredArgsConstructor;
+
+import {{package.name}}.entity.{{unit.pascal_name}}Entity;
+import {{package.name}}.model.{{projection.name}}.{{resource.pascal_name}}Model;
+
+import org.ntr1x.common.api.component.AppConverter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Component;
+
+public interface {{resource.pascal_name}}EntityConverter {
+
+    @RequiredArgsConstructor
+    @Component("{{module.camel_name}}.{{resource.camel_name}}EntityConverter.toModel")
+    class ToModel implements AppConverter<{{unit.pascal_name}}Entity, {{resource.pascal_name}}Model> {
+        private final ApplicationContext applicationContext;
+
+        public {{resource.pascal_name}}Model convert({{unit.pascal_name}}Entity source) {
+            ConversionService conversionService = applicationContext.getBean(ConversionService.class);
+
+            return {{resource.pascal_name}}Model.builder()
+                    {%- for desc in entity.keys.array %}
+                    {%- if projection.context.by_name is not containing(desc.name) %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for desc in entity.columns.array %}
+                    {%- if projection.context.by_name is not containing(desc.name) %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- for desc in entity.formulas.array %}
+                    {%- if projection.context.by_name is not containing(desc.name) %}
+                    .{{desc.camel_name}}(source.get{{desc.pascal_name}}())
+                    {%- endif -%}
+                    {%- endfor %}
+                    {%- if entity.refs | length > 0 -%}
+                    {%- for desc in entity.refs.array %}
+                    {%- if desc.variant == 'one' %}
+                    .{{desc.camel_name}}(conversionService.convert(
+                            source.get{{desc.pascal_name}}(),
+                            {{desc.unit.package.name}}.model.{{desc.unit.pascal_name}}Model.class))
+                    {%- endif -%}
+                    {%- endfor -%}
+                    {%- endif %}
+                    .build();
+        }
+    }
+}

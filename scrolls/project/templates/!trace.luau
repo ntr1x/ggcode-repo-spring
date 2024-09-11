@@ -1,0 +1,3 @@
+-- print(yaml:stringify({
+--   pom = pom
+-- }))

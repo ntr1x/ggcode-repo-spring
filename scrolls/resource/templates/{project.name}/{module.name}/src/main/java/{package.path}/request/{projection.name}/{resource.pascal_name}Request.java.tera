@@ -1,0 +1,258 @@
+package {{package.name}}.request.{{projection.name}};
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.Valid;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import org.ntr1x.common.jpa.criteria.OrderStatement;
+import org.ntr1x.common.jpa.criteria.WhereStatement;
+
+import org.springdoc.core.annotations.ParameterObject;
+
+import java.util.Collection;
+import java.util.Optional;
+
+public interface {{resource.pascal_name}}Request {
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestId")
+    class Id {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:id";
+
+        {%- for desc in entity.keys.array %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endfor %}
+    }
+
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestContext")
+    class Context {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:context";
+
+        {%- if projection.context.array | length > 0 -%}
+        {%- for desc in projection.context.array %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endfor -%}
+        {%- endif %}
+    }
+
+    {%- if projection.actions.by_method.create %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestCreate")
+    class Create {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:create";
+
+        {%- for desc in requests.create.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.replace %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestPut")
+    class Replace {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:replace";
+
+        {%- for desc in requests.replace.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.create.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.select %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestSelect")
+    class Select {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:select";
+
+        {%- for desc in requests.select.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.select.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for link in links %}
+        {%- if link.projection.actions.by_method.select %}
+        {# Blank line #}
+        private Optional<{{link.package.name}}.request.{{link.projection.name}}.{{link.resource.pascal_name}}Request.Select> {{link.link.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        @Valid
+        @Hidden
+        @JsonProperty("$where")
+        private Collection<@Valid WhereStatement> __where;
+
+        @Valid
+        @Hidden
+        @JsonProperty("$order")
+        private Collection<@Valid OrderStatement> __order;
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.update %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestUpdate")
+    class Update {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:update";
+
+        {%- for desc in requests.update.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.update.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.upsert %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestUpsert")
+    class Upsert {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:upsert";
+
+        {%- for desc in requests.upsert.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private {{desc.java_type}} {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.upsert.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+
+    {%- if projection.actions.by_method.find %}
+    {# Blank Line #}
+    @Data
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "{{resource.pascal_name}}RequestFind")
+    class Find {
+        @Hidden @Builder.Default
+        private String __name = "{{resource.snake_name}}:request:find";
+
+        {%- for desc in requests.find.keys.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+
+        {%- for desc in requests.find.columns.array %}
+        {%- if desc is containing('override') and desc.override.is_hidden %}
+        {#- Ignore -#}
+        {%- else %}
+        {# Blank line #}
+        private Optional<{{desc.java_type}}> {{desc.camel_name}};
+        {%- endif -%}
+        {%- endfor %}
+    }
+    {%- endif %}
+}

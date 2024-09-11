@@ -1,0 +1,8 @@
+app:
+  minio:
+    buckets:
+      - name: docs
+      - name: images
+        uploadPolicy:
+          contentType: image/
+          contentLength: 10M

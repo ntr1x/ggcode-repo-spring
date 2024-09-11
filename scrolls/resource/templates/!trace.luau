@@ -1,0 +1,6 @@
+-- print(yaml:stringify({
+--   resource = resource,
+--   views = views,
+--   signals = signals,
+--   requests = requests,
+-- }))

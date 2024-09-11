@@ -1,0 +1,27 @@
+server:
+  port: {{service.port}}
+  forward-headers-strategy: framework
+  servlet:
+    context-path: {{service.path}}
+
+spring:
+  application:
+    name: {{module.name}}
+  config:
+    import:
+      {%- if plugins is containing('common_jpa') %}
+      - classpath:shared-datasource.yaml
+      {%- endif %}
+      {%- if plugins is containing('common_security') %}
+      - classpath:shared-security.yaml
+      {%- endif %}
+      {%- if plugins is containing('common_minio') %}
+      - classpath:shared-minio-client.yaml
+      {%- endif %}
+      - classpath:{{module.name}}.yaml
+
+springdoc:
+  api:
+    title: {{api.title}}
+    description: {{api.description}}
+    version: {{api.version}}
